@@ -6,7 +6,12 @@ import (
 )
 
 type Config struct {
+	App      App
 	Postgres Postgres
+}
+
+type App struct {
+	Port string
 }
 
 type Postgres struct {
@@ -23,8 +28,10 @@ func Load(path string) Config {
 	conf := viper.New()
 	conf.AutomaticEnv()
 
-
 	cfg := Config{
+		App: App{
+			Port: conf.GetString("APP_PORT"),
+		},
 		Postgres: Postgres{
 			Host:     conf.GetString("POSTGRES_HOST"),
 			Port:     conf.GetString("POSTGRES_PORT"),

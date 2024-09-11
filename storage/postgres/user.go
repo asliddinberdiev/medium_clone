@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/asliddinberdiev/medium_clone/storage/repo"
 	"github.com/jmoiron/sqlx"
@@ -61,11 +62,12 @@ func (u *userRepo) Update(ctx context.Context, req *repo.UpdateUser) error {
 		UPDATE users SET 
 			first_name = $1,
 			last_name = $2,
-			password = $3
-		WHERE id = $4
+			password = $3,
+			updated_at = $4
+		WHERE id = $5
 	`
 
-	res, err := tsx.Exec(query, req.FirstName, req.LastName, req.Password, req.ID)
+	res, err := tsx.Exec(query, req.FirstName, req.LastName, req.Password, time.Now(), req.ID)
 	if err != nil {
 		errRoll := tsx.Rollback()
 		if errRoll != nil {

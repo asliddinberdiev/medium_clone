@@ -1,14 +1,13 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
+	"net/http"
 
+	router "github.com/asliddinberdiev/medium_clone/api"
 	"github.com/asliddinberdiev/medium_clone/config"
 	"github.com/asliddinberdiev/medium_clone/storage"
-	"github.com/asliddinberdiev/medium_clone/storage/repo"
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 
 	_ "github.com/lib/pq"
@@ -29,21 +28,15 @@ func main() {
 
 	strg := storage.NewStorage(psqlConn)
 
-	id, err := uuid.NewRandom()
-	if err != nil {
-		log.Fatal(err)
+	router := router.NewRouter(&router.Options{Strg: strg})
+
+	server := &http.Server{
+		Addr:    ":" + cfg.App.Port,
+		Handler: router,
 	}
 
-	user, err := strg.User().Create(context.TODO(), &repo.User{
-		ID:        id.String(),
-		FirstName: "Asliddin",
-		LastName:  "Berdiev",
-		Email:     "asliddinwork@gmail.com",
-		Password:  "12345678",
-	})
-	if err != nil {
-		log.Fatal(err)
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatalf("Failed to run to server: %v", err)
 	}
 
-	log.Println(user)
 }
