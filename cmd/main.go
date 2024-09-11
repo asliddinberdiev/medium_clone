@@ -35,6 +35,7 @@ func main() {
 		Handler: router,
 	}
 
+	log.Printf("Start to run to server: %v\n", cfg.App.Port)
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatalf("Failed to run to server: %v", err)
 	}
