@@ -11,7 +11,8 @@ type Config struct {
 }
 
 type App struct {
-	Port string
+	Port    string
+	Version string
 }
 
 type Postgres struct {
@@ -30,7 +31,8 @@ func Load(path string) Config {
 
 	cfg := Config{
 		App: App{
-			Port: conf.GetString("APP_PORT"),
+			Port:    conf.GetString("APP_PORT"),
+			Version: conf.GetString("APP_VERSION"),
 		},
 		Postgres: Postgres{
 			Host:     conf.GetString("POSTGRES_HOST"),
