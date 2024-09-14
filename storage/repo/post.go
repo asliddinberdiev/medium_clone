@@ -7,6 +7,7 @@ import (
 
 type PostStorageI interface {
 	Create(ctx context.Context, req *Post) (*Post, error)
+	GetAll(ctx context.Context)([]*Post, error)
 	Get(ctx context.Context, id string) (*Post, error)
 	Update(ctx context.Context, req *UpdatePost) error
 	Delete(ctx context.Context, id string) error

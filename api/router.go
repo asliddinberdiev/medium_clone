@@ -29,13 +29,13 @@ func NewRouter(opts *Options) *gin.Engine {
 			users.DELETE("/:id", handler.DeleteUser)
 		}
 
-		// posts := v1.Group("/posts")
-		// {
-		// 	posts.POST("/", handler.CreateUser)
-		// 	posts.GET("/:id", handler.GetUser)
-		// 	posts.PUT("/:id", handler.UpdateUser)
-		// 	posts.DELETE("/:id", handler.DeleteUser)
-		// }
+		posts := v1.Group("/posts")
+		{
+			posts.POST("/", handler.CreatePost)
+			posts.GET("/:id", handler.GetPost)
+			posts.PUT("/:id", handler.UpdatePost)
+			posts.DELETE("/:id", handler.DeletePost)
+		}
 	}
 
 	return router

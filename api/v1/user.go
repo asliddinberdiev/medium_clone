@@ -26,7 +26,7 @@ func (h *handlerV1) CreateUser(ctx *gin.Context) {
 
 	id, err := uuid.NewRandom()
 	if err != nil {
-		log.Printf("user create uuid error: %v", err)
+		log.Printf("user create uuid error: %v\n", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "error",
 			"message": "Internal error we got :(",
@@ -52,7 +52,7 @@ func (h *handlerV1) CreateUser(ctx *gin.Context) {
 			return
 		}
 
-		log.Printf("user create storage error: %v", err)
+		log.Printf("user create storage error: %v\n", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "error",
 			"message": "Internal error we got :(",

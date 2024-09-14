@@ -25,7 +25,7 @@ func (u *postRepo) Create(ctx context.Context, req *repo.Post) (*repo.Post, erro
 			id, user_id, title,
 			body, published) 
 		VALUES($1, $2, $3, $4, $5) 
-		RETURNING id, user_id, title, body, published, created_at, updated_at 
+		RETURNING * 
 	`
 
 	err := u.db.QueryRow(query, req.ID, req.UserID, req.Title, req.Body, req.Published).Scan(&req.ID, &req.UserID, &req.Title, &req.Body, &req.Published, &req.CreatedAt, &req.UpdatedAt)
@@ -36,13 +36,23 @@ func (u *postRepo) Create(ctx context.Context, req *repo.Post) (*repo.Post, erro
 	return req, nil
 }
 
+func (u *postRepo) GetAll(ctx context.Context) ([]*repo.Post, error) {
+	query := `SELECT * FROM posts`
+
+	var posts []*repo.Post
+	if err := u.db.Select(&posts, query); err != nil {
+		return nil, err
+	}
+
+	if posts == nil {
+		return []*repo.Post{}, nil
+	}
+
+	return posts, nil
+}
+
 func (u *postRepo) Get(ctx context.Context, id string) (*repo.Post, error) {
-	query := `
-		SELECT 
-			id, user_id, title,
-			body, published	, created_at, updated_at
-		FROM posts WHERE id = $1
-	`
+	query := `SELECT * FROM posts WHERE id = $1`
 
 	var post repo.Post
 	err := u.db.QueryRow(query, id).Scan(&post.ID, &post.UserID, &post.Title, &post.Body, &post.Published, &post.CreatedAt, &post.UpdatedAt)
