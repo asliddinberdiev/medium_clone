@@ -36,16 +36,31 @@ func (u *postRepo) Create(ctx context.Context, req *repo.Post) (*repo.Post, erro
 	return req, nil
 }
 
-func (u *postRepo) GetAll(ctx context.Context) ([]*repo.Post, error) {
-	query := `SELECT * FROM posts`
+func (u *postRepo) GetAll(ctx context.Context, limit int, offset int) ([]*repo.Post, error) {
+	query := `
+		SELECT * FROM posts
+		ORDER BY id LIMIT $1 OFFSET $2
+		`
 
 	var posts []*repo.Post
-	if err := u.db.Select(&posts, query); err != nil {
+	if err := u.db.Select(&posts, query, limit, offset); err != nil {
 		return nil, err
 	}
 
-	if posts == nil {
-		return []*repo.Post{}, nil
+	return posts, nil
+}
+
+func (u *postRepo) GetAllPersonal(ctx context.Context, userID string, limit int, offset int) ([]*repo.PostPersonal, error) {
+	query := `
+		SELECT id, title, body, published, created_at, updated_at 
+		FROM posts
+		WHERE user_id = $1
+		ORDER BY id LIMIT $2 OFFSET $3
+		`
+
+	var posts []*repo.PostPersonal
+	if err := u.db.Select(&posts, query, userID, limit, offset); err != nil {
+		return nil, err
 	}
 
 	return posts, nil

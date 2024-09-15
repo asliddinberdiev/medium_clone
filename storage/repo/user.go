@@ -13,18 +13,19 @@ type UserStorageI interface {
 }
 
 type User struct {
-	ID        string
-	FirstName string
-	LastName  string
-	Email     string
-	Password  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string    `db:"id"`
+	FirstName string    `db:"first_name"`
+	LastName  string    `db:"last_name"`
+	Email     string    `db:"email"`
+	Password  string    `db:"password"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 type UpdateUser struct {
-	ID        string
-	FirstName string
-	LastName  string
-	Password  string
+	ID        string `db:"id"`
+	FirstName string `db:"first_name"`
+	LastName  string `db:"last_name"`
+	Email     string `db:"email"`
+	Password  string `db:"password"`
 }

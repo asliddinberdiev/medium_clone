@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/asliddinberdiev/medium_clone/api/models"
@@ -60,6 +61,95 @@ func (h *handlerV1) CreatePost(ctx *gin.Context) {
 			CreatedAt: post.CreatedAt.Format(time.RFC3339),
 			UpdatedAt: post.UpdatedAt.Format(time.RFC3339),
 		},
+	})
+}
+
+func (h *handlerV1) AllPost(ctx *gin.Context) {
+	limitQuery := ctx.DefaultQuery("limit", "10")
+	pageQuery := ctx.DefaultQuery("page", "1")
+	personalQuery := ctx.DefaultQuery("personal", "false")
+	userID := ctx.DefaultQuery("user_id", "")
+
+	limit, err := strconv.Atoi(limitQuery)
+	if err != nil || limit <= 0 {
+		limit = 10
+	}
+	page, err := strconv.Atoi(pageQuery)
+	if err != nil || page <= 0 {
+		page = 1
+	}
+	personal, err := strconv.ParseBool(personalQuery)
+	if err != nil {
+		personal = false
+	}
+
+	if personal && userID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  "error",
+			"message": "user id required",
+		})
+		return
+	}
+
+	if personal {
+		_, err = h.strg.User().Get(ctx, userID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				log.Printf("User not found: %v", err)
+				ctx.JSON(http.StatusNotFound, gin.H{
+					"status":  "error",
+					"message": "user not found",
+				})
+				return
+			}
+			log.Printf("Error getting user: %v", err)
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "error",
+				"message": "Internal error we got :(",
+			})
+			return
+		}
+	}
+
+	offset := (page - 1) * limit
+
+	if personal {
+		posts, err := h.strg.Post().GetAllPersonal(ctx, userID, limit, offset)
+		if err != nil {
+			log.Printf("Error getting posts: %v", err)
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "error",
+				"message": "Internal error we got :(",
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"status":  "ok",
+			"message": "Get posts successfully",
+			"page":    page,
+			"limit":   limit,
+			"posts":   posts,
+		})
+		return
+	}
+
+	posts, err := h.strg.Post().GetAll(ctx, limit, offset)
+	if err != nil {
+		log.Printf("Error getting posts: %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"status":  "error",
+			"message": "Internal error we got :(",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"status":  "ok",
+		"message": "Get posts successfully",
+		"page":    page,
+		"limit":   limit,
+		"posts":   posts,
 	})
 }
 
