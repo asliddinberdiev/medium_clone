@@ -5,14 +5,14 @@ import (
 )
 
 func Error(ctx *gin.Context, status int, message string) {
-	ctx.JSON(status, gin.H{
+	ctx.AbortWithStatusJSON(status, gin.H{
 		"success": false,
 		"message": message,
 	})
 }
 
 func Data(ctx *gin.Context, status int, message string, data interface{}) {
-	ctx.JSON(status, gin.H{
+	ctx.AbortWithStatusJSON(status, gin.H{
 		"success": true,
 		"message": message,
 		"data":    data,
@@ -20,7 +20,7 @@ func Data(ctx *gin.Context, status int, message string, data interface{}) {
 }
 
 func List(ctx *gin.Context, status int, message string, limit, page uint, data []interface{}) {
-	ctx.JSON(status, gin.H{
+	ctx.AbortWithStatusJSON(status, gin.H{
 		"success": true,
 		"message": message,
 		"limit":   limit,
@@ -30,7 +30,7 @@ func List(ctx *gin.Context, status int, message string, limit, page uint, data [
 }
 
 func Status(ctx *gin.Context, status int, message string) {
-	ctx.JSON(status, gin.H{
+	ctx.AbortWithStatusJSON(status, gin.H{
 		"success": true,
 		"message": message,
 	})

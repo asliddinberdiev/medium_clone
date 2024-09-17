@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"log"
 	"time"
 
 	models "github.com/asliddinberdiev/medium_clone/models"
@@ -28,6 +29,7 @@ func (r *PostRepository) Create(ctx context.Context, req *models.Post) (*models.
 
 	err := r.db.QueryRow(query, req.ID, req.UserID, req.Title, req.Body, req.Published).Scan(&req.ID, &req.UserID, &req.Title, &req.Body, &req.Published, &req.CreatedAt, &req.UpdatedAt)
 	if err != nil {
+		log.Println("repository: post create error: ", err)
 		return nil, err
 	}
 
@@ -42,6 +44,7 @@ func (r *PostRepository) GetAll(ctx context.Context, limit int, offset int) ([]*
 
 	var posts []*models.Post
 	if err := r.db.Select(&posts, query, limit, offset); err != nil {
+		log.Println("repository: post get all error: ", err)
 		return nil, err
 	}
 
@@ -58,6 +61,7 @@ func (r *PostRepository) GetAllPersonal(ctx context.Context, userID string, limi
 
 	var posts []*models.PersonalPost
 	if err := r.db.Select(&posts, query, userID, limit, offset); err != nil {
+		log.Println("repository: post get all personal error: ", err)
 		return nil, err
 	}
 
@@ -70,6 +74,7 @@ func (r *PostRepository) Get(ctx context.Context, id string) (*models.Post, erro
 	var post models.Post
 	err := r.db.QueryRow(query, id).Scan(&post.ID, &post.UserID, &post.Title, &post.Body, &post.Published, &post.CreatedAt, &post.UpdatedAt)
 	if err != nil {
+		log.Println("repository: post get by id error: ", err)
 		return nil, err
 	}
 
@@ -79,6 +84,7 @@ func (r *PostRepository) Get(ctx context.Context, id string) (*models.Post, erro
 func (r *PostRepository) Update(ctx context.Context, req *models.UpdatePost) error {
 	tsx, err := r.db.Begin()
 	if err != nil {
+		log.Println("repository: post update begin error: ", err)
 		return err
 	}
 
@@ -96,8 +102,10 @@ func (r *PostRepository) Update(ctx context.Context, req *models.UpdatePost) err
 	if err != nil {
 		errRoll := tsx.Rollback()
 		if errRoll != nil {
+			log.Println("repository: post update rollback error: ", err)
 			err = errRoll
 		}
+		log.Println("repository: post update exec query error: ", err)
 		return err
 	}
 
@@ -105,13 +113,16 @@ func (r *PostRepository) Update(ctx context.Context, req *models.UpdatePost) err
 	if err != nil {
 		errRoll := tsx.Rollback()
 		if errRoll != nil {
+			log.Println("repository: post update rowsaffected rollback error: ", err)
 			err = errRoll
 		}
+		log.Println("repository: post update rowsaffected error: ", err)
 		return err
 	}
 
 	if data == 0 {
 		tsx.Commit()
+		log.Println("repository: post update not found error: ", err)
 		return sql.ErrNoRows
 	}
 
@@ -121,11 +132,13 @@ func (r *PostRepository) Update(ctx context.Context, req *models.UpdatePost) err
 func (r *PostRepository) Delete(ctx context.Context, id string) error {
 	tsx, err := r.db.Begin()
 	if err != nil {
+		log.Println("repository: post delete rollback error: ", err)
 		return err
 	}
 
 	res, err := tsx.Exec("DELETE FROM posts WHERE id = $1", id)
 	if err != nil {
+		log.Println("repository: post delete exec error: ", err)
 		return err
 	}
 
@@ -133,13 +146,16 @@ func (r *PostRepository) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		errRoll := tsx.Rollback()
 		if errRoll != nil {
+			log.Println("repository: post delete rollback error: ", err)
 			err = errRoll
 		}
+		log.Println("repository: post delete rowsaffected rollback error: ", err)
 		return err
 	}
 
 	if data == 0 {
 		tsx.Commit()
+		log.Println("repository: post delete not found error: ", err)
 		return sql.ErrNoRows
 	}
 

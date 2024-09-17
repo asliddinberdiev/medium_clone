@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"net/http"
 
 	models "github.com/asliddinberdiev/medium_clone/models"
@@ -15,7 +16,7 @@ func (h *Handler) userCreate(ctx *gin.Context) {
 		return
 	}
 
-	user, err := h.services.User.Create(ctx, input)
+	user, err := h.services.User.Create(input)
 	if err != nil {
 		if err.Error() == "unique" {
 			utils.Error(ctx, http.StatusBadRequest, "this email already used")
@@ -47,6 +48,32 @@ func (h *Handler) userCreate(ctx *gin.Context) {
 		"user":  user,
 	})
 }
-func (h *Handler) userGet(c *gin.Context)    {}
+
+func (h *Handler) userGet(ctx *gin.Context) {
+	user_id := ctx.GetString("user_id")
+	id, ok := ctx.Params.Get("id")
+	if !ok {
+		utils.Error(ctx, http.StatusBadRequest, "invalid id param")
+		return
+	}
+
+	if user_id != id {
+		utils.Error(ctx, http.StatusNotFound, "not found user")
+		return
+	}
+
+	user, err := h.services.User.GetByID(user_id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			utils.Error(ctx, http.StatusNotFound, "user not found")
+			return
+		}
+		utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
+		return
+	}
+
+	utils.Data(ctx, http.StatusOK, "get user successfully", user)
+}
+
 func (h *Handler) userUpdate(c *gin.Context) {}
 func (h *Handler) userDelete(c *gin.Context) {}

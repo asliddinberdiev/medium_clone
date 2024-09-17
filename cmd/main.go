@@ -18,13 +18,12 @@ func main() {
 	_ = os.Mkdir("logs", 0770)
 	logFile, err := os.OpenFile(path.Join("logs", "app.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
-		log.Fatalf("create log file error: %v\n", err)
+		log.Fatalln("create log file error: ", err)
 	}
 	log.SetOutput(logFile)
 
 	cfg := config.Load(".")
 
-	// initialize db
 	db, err := repository.NewPostgresDB(repository.PostgresConfig{
 		User:     cfg.Postgres.User,
 		Password: cfg.Postgres.Password,
@@ -34,21 +33,16 @@ func main() {
 		SSLMode:  cfg.Postgres.SSLMode,
 	})
 	if err != nil {
-		log.Fatalf("failed to initialize db error: %v\n", err)
+		log.Fatalln("failed to initialize db error: ", err)
 	}
 
-	// initialize repository
 	repos := repository.NewRepository(db)
-
-	// initialize services
 	services := service.NewService(repos, cfg.App)
-
-	// initialize handlers
-	handlers := handler.NewHandler(services, cfg.App.Version)
+	handlers := handler.NewHandler(services, cfg.App)
 
 	log.Println("app run on port: ", cfg.App.Port)
 	srv := new(server.Server)
 	if err := srv.Run(cfg.App.Port, handlers.InitRoutes()); err != nil {
-		log.Fatalf("running http server error: %v\n", err)
+		log.Fatalln("running http server error: ", err)
 	}
 }

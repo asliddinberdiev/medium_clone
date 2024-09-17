@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"log"
 	"strconv"
 	"time"
 
@@ -32,6 +33,7 @@ func generate(userID, userRole, tokenType, sekretKey string, expireTime time.Dur
 
 	signedToken, err := token.SignedString([]byte(sekretKey))
 	if err != nil {
+		log.Println("service: token generate signedString error: ", err)
 		return "", err
 	}
 
@@ -41,6 +43,7 @@ func generate(userID, userRole, tokenType, sekretKey string, expireTime time.Dur
 func (s *TokenService) AccessTokenGenerate(userID, userRole string) (string, error) {
 	accessTime, err := strconv.Atoi(s.cfg.AccessTime)
 	if err != nil {
+		log.Println("service: token access generate time error: ", err)
 		return "", err
 	}
 	return generate(userID, userRole, "access", s.cfg.TokenKey, time.Minute*time.Duration(accessTime))
@@ -49,6 +52,7 @@ func (s *TokenService) AccessTokenGenerate(userID, userRole string) (string, err
 func (s *TokenService) RefreshTokenGenerate(userID, userRole string) (string, error) {
 	refreshTime, err := strconv.Atoi(s.cfg.RefreshTime)
 	if err != nil {
+		log.Println("service: token refresh generate time error: ", err)
 		return "", err
 	}
 	return generate(userID, userRole, "refresh", s.cfg.TokenKey, time.Hour*time.Duration(refreshTime))
@@ -57,12 +61,13 @@ func (s *TokenService) RefreshTokenGenerate(userID, userRole string) (string, er
 func (s *TokenService) Parse(tokenString string) (map[string]interface{}, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			log.Println("service: token parse method error")
 			return nil, errors.New("an error occurred while validating the token")
 		}
 		return []byte(s.cfg.TokenKey), nil
 	})
-
 	if err != nil {
+		log.Println("service: token parse jwt error: ", err)
 		return nil, err
 	}
 
@@ -76,5 +81,6 @@ func (s *TokenService) Parse(tokenString string) (map[string]interface{}, error)
 		return result, nil
 	}
 
+	log.Println("service: token invalid")
 	return nil, errors.New("invalid token")
 }

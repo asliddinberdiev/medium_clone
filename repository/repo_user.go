@@ -1,12 +1,11 @@
 package repository
 
 import (
-	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"strings"
 	"time"
-	"log"
 
 	models "github.com/asliddinberdiev/medium_clone/models"
 	"github.com/jmoiron/sqlx"
@@ -20,7 +19,7 @@ func NewUserRepository(db *sqlx.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) Create(ctx context.Context, user models.User) (*models.User, error) {
+func (r *UserRepository) Create(user models.User) (*models.User, error) {
 	query := `
 		INSERT INTO users (id, first_name, last_name, email, password, role) 
 		VALUES($1, $2, $3, $4, $5, $6) 
@@ -33,37 +32,43 @@ func (r *UserRepository) Create(ctx context.Context, user models.User) (*models.
 			log.Println("repository: user create: this email already used")
 			return nil, errors.New("unique")
 		}
-		log.Printf("repository: user create error: %v\n", err)
+		log.Println("repository: user create query error: ", err)
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-func (r *UserRepository) GetAll(ctx context.Context) ([]models.User, error) {
+func (r *UserRepository) GetAll() ([]models.User, error) {
 	return []models.User{}, nil
 }
 
-func (u *UserRepository) Get(ctx context.Context, id string) (*models.User, error) {
+func (u *UserRepository) Get(id string) (*models.User, error) {
 	query := `
 		SELECT 
 			id, first_name, last_name,
-			email, created_at, updated_at
+			email, role, created_at, updated_at
 		FROM users WHERE id = $1
 	`
 
 	var user models.User
-	err := u.db.QueryRow(query, id).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.CreatedAt, &user.UpdatedAt)
+	err := u.db.QueryRow(query, id).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Println("repository: user not found")
+			return nil, err
+		}
+		log.Println("repository: user get query error: ", err)
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-func (u *UserRepository) Update(ctx context.Context, req *models.User) error {
+func (u *UserRepository) Update(req *models.User) error {
 	tsx, err := u.db.Begin()
 	if err != nil {
+		log.Println("repository: user update begin error: ", err)
 		return err
 	}
 
@@ -80,8 +85,10 @@ func (u *UserRepository) Update(ctx context.Context, req *models.User) error {
 	if err != nil {
 		errRoll := tsx.Rollback()
 		if errRoll != nil {
+			log.Println("repository: user update rollback error: ", err)
 			err = errRoll
 		}
+		log.Println("repository: user update exec error: ", err)
 		return err
 	}
 
@@ -89,27 +96,32 @@ func (u *UserRepository) Update(ctx context.Context, req *models.User) error {
 	if err != nil {
 		errRoll := tsx.Rollback()
 		if errRoll != nil {
+			log.Println("repository: user update rowsaffected rollback error: ", err)
 			err = errRoll
 		}
+		log.Println("repository: user update rowsaffected error: ", err)
 		return err
 	}
 
 	if data == 0 {
 		tsx.Commit()
+		log.Println("repository: user update not found error: ", err)
 		return sql.ErrNoRows
 	}
 
 	return tsx.Commit()
 }
 
-func (u *UserRepository) Delete(ctx context.Context, id string) error {
+func (u *UserRepository) Delete(id string) error {
 	tsx, err := u.db.Begin()
 	if err != nil {
+		log.Println("repository: user delete begin error: ", err)
 		return err
 	}
 
 	res, err := tsx.Exec("DELETE FROM users WHERE id = $1", id)
 	if err != nil {
+		log.Println("repository: user delete exec error: ", err)
 		return err
 	}
 
@@ -117,13 +129,16 @@ func (u *UserRepository) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		errRoll := tsx.Rollback()
 		if errRoll != nil {
+			log.Println("repository: user delete rowsaffected rollback error: ", err)
 			err = errRoll
 		}
+		log.Println("repository: user delete rowsaffected error: ", err)
 		return err
 	}
 
 	if data == 0 {
 		tsx.Commit()
+		log.Println("repository: user delete not found error: ", err)
 		return sql.ErrNoRows
 	}
 

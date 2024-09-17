@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/asliddinberdiev/medium_clone/config"
 	"github.com/asliddinberdiev/medium_clone/middleware"
 	"github.com/asliddinberdiev/medium_clone/service"
 	"github.com/gin-gonic/gin"
@@ -8,27 +9,25 @@ import (
 
 type Handler struct {
 	services *service.Service
-	version  string
+	cfg config.App
 }
 
-func NewHandler(services *service.Service, version string) *Handler {
-	return &Handler{services: services, version: version}
+func NewHandler(services *service.Service, cfg config.App) *Handler {
+	return &Handler{services: services, cfg: cfg}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
 	router.Use(gin.LoggerWithWriter(service.LoggerWrite()))
-
 	router.RedirectTrailingSlash = true
 
-	// ROUTES
-	v1 := router.Group("/api/" + h.version)
+	v1 := router.Group("/api/" + h.cfg.Version)
 	{
-		users := v1.Group("/users", middleware.JWTMiddleware())
+		users := v1.Group("/users")
 		{
 			users.POST("/", h.userCreate)
-			users.GET("/:id", h.userGet)
+			users.GET("/:id", middleware.JWTMiddleware(h.cfg), h.userGet)
 			users.PUT("/:id", h.userUpdate)
 			users.DELETE("/:id", h.userDelete)
 		}

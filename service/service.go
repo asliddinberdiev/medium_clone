@@ -1,15 +1,14 @@
 package service
 
 import (
-	"context"
-
 	"github.com/asliddinberdiev/medium_clone/config"
 	models "github.com/asliddinberdiev/medium_clone/models"
 	"github.com/asliddinberdiev/medium_clone/repository"
 )
 
 type User interface {
-	Create(ctx context.Context, user models.UserCreate) (*models.User, error)
+	Create(user models.UserCreate) (*models.User, error)
+	GetByID(id string)(*models.User, error)
 }
 
 type Post interface {

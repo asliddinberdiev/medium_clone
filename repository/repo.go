@@ -8,11 +8,11 @@ import (
 )
 
 type User interface {
-	Create(ctx context.Context, user models.User) (*models.User, error)
-	GetAll(ctx context.Context) ([]models.User, error)
-	Get(ctx context.Context, id string) (*models.User, error)
-	Update(ctx context.Context, req *models.User) error
-	Delete(ctx context.Context, id string) error
+	Create(user models.User) (*models.User, error)
+	GetAll() ([]models.User, error)
+	Get(id string) (*models.User, error)
+	Update(req *models.User) error
+	Delete(id string) error
 }
 
 type Post interface {

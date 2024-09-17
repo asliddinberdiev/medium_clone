@@ -30,17 +30,14 @@ type Postgres struct {
 }
 
 func Load(path string) Config {
-
-	// Load environment variables from the .env file
 	err := godotenv.Load(path + "/.env")
 	if err != nil {
-		log.Fatalf("loading .env file error: %v\n", err)
+		log.Fatalln("loading .env file error: ", err)
 	}
 
 	conf := viper.New()
 	conf.AutomaticEnv()
 
-	// Populate the Config struct
 	cfg := Config{
 		App: App{
 			Port:        conf.GetString("APP_PORT"),

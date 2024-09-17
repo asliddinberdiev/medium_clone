@@ -1,17 +1,47 @@
 package middleware
 
 import (
-	"log"
+	"net/http"
+	"strings"
 
+	"github.com/asliddinberdiev/medium_clone/config"
+	"github.com/asliddinberdiev/medium_clone/service"
+	"github.com/asliddinberdiev/medium_clone/utils"
 	"github.com/gin-gonic/gin"
 )
 
-func JWTMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		tokenBearer := c.GetHeader("Authorization")
+func JWTMiddleware(cfg config.App) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		authHeader := ctx.GetHeader("Authorization")
+		if authHeader == "" {
+			utils.Error(ctx, http.StatusUnauthorized, "invalid authorization")
+			return
+		}
 
-		log.Printf("token: %v", tokenBearer)
+		tokenParts := strings.Split(authHeader, " ")
+		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+			utils.Error(ctx, http.StatusUnauthorized, "invalid authorization")
+			return
+		}
 
-		c.Next()
+		token := tokenParts[1]
+		if token == "" {
+			utils.Error(ctx, http.StatusUnauthorized, "invalid authorization")
+			return
+		}
+
+		claims, err := service.NewTokenService(cfg).Parse(token)
+		if err != nil {
+			utils.Error(ctx, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		user_id := claims["id"]
+		role := claims["role"]
+
+		ctx.Set("user_id", user_id)
+		ctx.Set("role", role)
+
+		ctx.Next()
 	}
 }
