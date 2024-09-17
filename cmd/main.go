@@ -1,27 +1,28 @@
 package main
 
 import (
-	L "log"
+	"log"
+	"os"
+	"path"
 
 	"github.com/asliddinberdiev/medium_clone/config"
 	"github.com/asliddinberdiev/medium_clone/handler"
 	"github.com/asliddinberdiev/medium_clone/repository"
 	"github.com/asliddinberdiev/medium_clone/server"
 	"github.com/asliddinberdiev/medium_clone/service"
-	"go.uber.org/zap"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	log := service.InitLogger("logs", "app")
-	defer func() {
-		if err := log.Sync(); err != nil {
-			L.Fatalf("logger sync error: %v\n", err)
-		}
-	}()
+	_ = os.Mkdir("logs", 0770)
+	logFile, err := os.OpenFile(path.Join("logs", "app.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("create log file error: %v\n", err)
+	}
+	log.SetOutput(logFile)
 
-	cfg := config.Load(".", log)
+	cfg := config.Load(".")
 
 	// initialize db
 	db, err := repository.NewPostgresDB(repository.PostgresConfig{
@@ -31,23 +32,23 @@ func main() {
 		Port:     cfg.Postgres.Port,
 		Database: cfg.Postgres.Database,
 		SSLMode:  cfg.Postgres.SSLMode,
-	}, log)
+	})
 	if err != nil {
-		log.Fatal("failed to initialize db", zap.Error(err))
+		log.Fatalf("failed to initialize db error: %v\n", err)
 	}
 
 	// initialize repository
-	repos := repository.NewRepository(db, log)
+	repos := repository.NewRepository(db)
 
 	// initialize services
-	services := service.NewService(repos, log)
+	services := service.NewService(repos, cfg.App)
 
 	// initialize handlers
-	handlers := handler.NewHandler(services, cfg.App.Version, log)
+	handlers := handler.NewHandler(services, cfg.App.Version)
 
-	log.Info("app run", zap.String("port", cfg.App.Port))
+	log.Println("app run on port: ", cfg.App.Port)
 	srv := new(server.Server)
 	if err := srv.Run(cfg.App.Port, handlers.InitRoutes()); err != nil {
-		log.Fatal("error occurred while running http server", zap.Error(err))
+		log.Fatalf("running http server error: %v\n", err)
 	}
 }

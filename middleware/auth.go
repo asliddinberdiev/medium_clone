@@ -1,15 +1,16 @@
 package middleware
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
-func JWTMiddleware(log *zap.Logger) gin.HandlerFunc {
+func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenBearer := c.GetHeader("Authorization")
 
-		log.Info("token", zap.Any("bearer", tokenBearer))
+		log.Printf("token: %v", tokenBearer)
 
 		c.Next()
 	}

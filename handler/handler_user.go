@@ -25,7 +25,27 @@ func (h *Handler) userCreate(ctx *gin.Context) {
 		return
 	}
 
-	utils.Data(ctx, http.StatusCreated, "created successfully", user)
+	accessToken, err := h.services.Token.AccessTokenGenerate(user.ID, user.Role)
+	if err != nil {
+		utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
+		return
+	}
+
+	refreshToken, err := h.services.Token.RefreshTokenGenerate(user.ID, user.Role)
+	if err != nil {
+		utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
+		return
+	}
+
+	token := map[string]string{
+		"access":  accessToken,
+		"refresh": refreshToken,
+	}
+
+	utils.Data(ctx, http.StatusCreated, "created successfully", map[string]interface{}{
+		"token": token,
+		"user":  user,
+	})
 }
 func (h *Handler) userGet(c *gin.Context)    {}
 func (h *Handler) userUpdate(c *gin.Context) {}

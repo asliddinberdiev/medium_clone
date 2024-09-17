@@ -4,28 +4,28 @@ import (
 	"github.com/asliddinberdiev/medium_clone/middleware"
 	"github.com/asliddinberdiev/medium_clone/service"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type Handler struct {
 	services *service.Service
 	version  string
-	log      *zap.Logger
 }
 
-func NewHandler(services *service.Service, version string, log *zap.Logger) *Handler {
-	return &Handler{services: services, version: version, log: log}
+func NewHandler(services *service.Service, version string) *Handler {
+	return &Handler{services: services, version: version}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
+
+	router.Use(gin.LoggerWithWriter(service.LoggerWrite()))
 
 	router.RedirectTrailingSlash = true
 
 	// ROUTES
 	v1 := router.Group("/api/" + h.version)
 	{
-		users := v1.Group("/users", middleware.JWTMiddleware(h.log))
+		users := v1.Group("/users", middleware.JWTMiddleware())
 		{
 			users.POST("/", h.userCreate)
 			users.GET("/:id", h.userGet)

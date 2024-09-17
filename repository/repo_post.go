@@ -7,19 +7,14 @@ import (
 
 	models "github.com/asliddinberdiev/medium_clone/models"
 	"github.com/jmoiron/sqlx"
-	"go.uber.org/zap"
 )
 
 type PostRepository struct {
-	db  *sqlx.DB
-	log *zap.Logger
+	db *sqlx.DB
 }
 
-func NewPostRepository(db *sqlx.DB, log *zap.Logger) *PostRepository {
-	return &PostRepository{
-		db:  db,
-		log: log,
-	}
+func NewPostRepository(db *sqlx.DB) *PostRepository {
+	return &PostRepository{db: db}
 }
 
 func (r *PostRepository) Create(ctx context.Context, req *models.Post) (*models.Post, error) {

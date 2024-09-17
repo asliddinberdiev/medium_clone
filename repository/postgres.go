@@ -3,8 +3,9 @@ package repository
 import (
 	"fmt"
 
+	"log"
+
 	"github.com/jmoiron/sqlx"
-	"go.uber.org/zap"
 )
 
 type PostgresConfig struct {
@@ -12,11 +13,11 @@ type PostgresConfig struct {
 	Password string
 	Host     string
 	Port     string
-	Database     string
+	Database string
 	SSLMode  string
 }
 
-func NewPostgresDB(cfg PostgresConfig, log *zap.Logger) (*sqlx.DB, error) {
+func NewPostgresDB(cfg PostgresConfig) (*sqlx.DB, error) {
 	dbUrl := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
 		cfg.Host,
 		cfg.Port,
@@ -28,16 +29,16 @@ func NewPostgresDB(cfg PostgresConfig, log *zap.Logger) (*sqlx.DB, error) {
 
 	db, err := sqlx.Open("postgres", dbUrl)
 	if err != nil {
-		log.Fatal("postgres ping error", zap.Error(err))
+		log.Fatalf("postgres ping error: %v\n", err)
 		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("postgres ping error", zap.Error(err))
+		log.Fatalf("postgres ping error: %v\n", err)
 		return nil, err
 	}
 
-	log.Info("initialize postgres")
+	log.Println("initialize postgres")
 	return db, nil
 }

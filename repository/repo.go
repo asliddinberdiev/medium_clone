@@ -5,7 +5,6 @@ import (
 
 	models "github.com/asliddinberdiev/medium_clone/models"
 	"github.com/jmoiron/sqlx"
-	"go.uber.org/zap"
 )
 
 type User interface {
@@ -15,7 +14,6 @@ type User interface {
 	Update(ctx context.Context, req *models.User) error
 	Delete(ctx context.Context, id string) error
 }
-
 
 type Post interface {
 	Create(ctx context.Context, req *models.Post) (*models.Post, error)
@@ -31,9 +29,9 @@ type Repository struct {
 	Post
 }
 
-func NewRepository(db *sqlx.DB, log *zap.Logger) *Repository {
+func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
-		User: NewUserRepository(db, log),
-		Post: NewPostRepository(db, log),
+		User: NewUserRepository(db),
+		Post: NewPostRepository(db),
 	}
 }

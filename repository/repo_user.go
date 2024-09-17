@@ -6,19 +6,18 @@ import (
 	"errors"
 	"strings"
 	"time"
+	"log"
 
 	models "github.com/asliddinberdiev/medium_clone/models"
 	"github.com/jmoiron/sqlx"
-	"go.uber.org/zap"
 )
 
 type UserRepository struct {
-	db  *sqlx.DB
-	log *zap.Logger
+	db *sqlx.DB
 }
 
-func NewUserRepository(db *sqlx.DB, log *zap.Logger) *UserRepository {
-	return &UserRepository{db: db, log: log}
+func NewUserRepository(db *sqlx.DB) *UserRepository {
+	return &UserRepository{db: db}
 }
 
 func (r *UserRepository) Create(ctx context.Context, user models.User) (*models.User, error) {
@@ -31,10 +30,10 @@ func (r *UserRepository) Create(ctx context.Context, user models.User) (*models.
 	err := r.db.QueryRow(query, user.ID, user.FirstName, user.LastName, user.Email, user.Password, user.Role).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key") {
-			r.log.Error("repository: user create", zap.String("error", "this email already used"))
+			log.Println("repository: user create: this email already used")
 			return nil, errors.New("unique")
 		}
-		r.log.Error("repository: user create", zap.Error(err))
+		log.Printf("repository: user create error: %v\n", err)
 		return nil, err
 	}
 
