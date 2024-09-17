@@ -1,25 +1,28 @@
-package postgres
+package repository
 
 import (
 	"context"
 	"database/sql"
 	"time"
 
-	"github.com/asliddinberdiev/medium_clone/storage/repo"
+	models "github.com/asliddinberdiev/medium_clone/models"
 	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
 )
 
-type postRepo struct {
-	db *sqlx.DB
+type PostRepository struct {
+	db  *sqlx.DB
+	log *zap.Logger
 }
 
-func NewPostStorage(db *sqlx.DB) repo.PostStorageI {
-	return &postRepo{
-		db: db,
+func NewPostRepository(db *sqlx.DB, log *zap.Logger) *PostRepository {
+	return &PostRepository{
+		db:  db,
+		log: log,
 	}
 }
 
-func (u *postRepo) Create(ctx context.Context, req *repo.Post) (*repo.Post, error) {
+func (r *PostRepository) Create(ctx context.Context, req *models.Post) (*models.Post, error) {
 	query := `
 		INSERT INTO posts (
 			id, user_id, title,
@@ -28,7 +31,7 @@ func (u *postRepo) Create(ctx context.Context, req *repo.Post) (*repo.Post, erro
 		RETURNING * 
 	`
 
-	err := u.db.QueryRow(query, req.ID, req.UserID, req.Title, req.Body, req.Published).Scan(&req.ID, &req.UserID, &req.Title, &req.Body, &req.Published, &req.CreatedAt, &req.UpdatedAt)
+	err := r.db.QueryRow(query, req.ID, req.UserID, req.Title, req.Body, req.Published).Scan(&req.ID, &req.UserID, &req.Title, &req.Body, &req.Published, &req.CreatedAt, &req.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -36,21 +39,21 @@ func (u *postRepo) Create(ctx context.Context, req *repo.Post) (*repo.Post, erro
 	return req, nil
 }
 
-func (u *postRepo) GetAll(ctx context.Context, limit int, offset int) ([]*repo.Post, error) {
+func (r *PostRepository) GetAll(ctx context.Context, limit int, offset int) ([]*models.Post, error) {
 	query := `
 		SELECT * FROM posts
 		ORDER BY id LIMIT $1 OFFSET $2
 		`
 
-	var posts []*repo.Post
-	if err := u.db.Select(&posts, query, limit, offset); err != nil {
+	var posts []*models.Post
+	if err := r.db.Select(&posts, query, limit, offset); err != nil {
 		return nil, err
 	}
 
 	return posts, nil
 }
 
-func (u *postRepo) GetAllPersonal(ctx context.Context, userID string, limit int, offset int) ([]*repo.PostPersonal, error) {
+func (r *PostRepository) GetAllPersonal(ctx context.Context, userID string, limit int, offset int) ([]*models.PersonalPost, error) {
 	query := `
 		SELECT id, title, body, published, created_at, updated_at 
 		FROM posts
@@ -58,19 +61,19 @@ func (u *postRepo) GetAllPersonal(ctx context.Context, userID string, limit int,
 		ORDER BY id LIMIT $2 OFFSET $3
 		`
 
-	var posts []*repo.PostPersonal
-	if err := u.db.Select(&posts, query, userID, limit, offset); err != nil {
+	var posts []*models.PersonalPost
+	if err := r.db.Select(&posts, query, userID, limit, offset); err != nil {
 		return nil, err
 	}
 
 	return posts, nil
 }
 
-func (u *postRepo) Get(ctx context.Context, id string) (*repo.Post, error) {
+func (r *PostRepository) Get(ctx context.Context, id string) (*models.Post, error) {
 	query := `SELECT * FROM posts WHERE id = $1`
 
-	var post repo.Post
-	err := u.db.QueryRow(query, id).Scan(&post.ID, &post.UserID, &post.Title, &post.Body, &post.Published, &post.CreatedAt, &post.UpdatedAt)
+	var post models.Post
+	err := r.db.QueryRow(query, id).Scan(&post.ID, &post.UserID, &post.Title, &post.Body, &post.Published, &post.CreatedAt, &post.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +81,8 @@ func (u *postRepo) Get(ctx context.Context, id string) (*repo.Post, error) {
 	return &post, nil
 }
 
-func (u *postRepo) Update(ctx context.Context, req *repo.UpdatePost) error {
-	tsx, err := u.db.Begin()
+func (r *PostRepository) Update(ctx context.Context, req *models.UpdatePost) error {
+	tsx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}
@@ -120,8 +123,8 @@ func (u *postRepo) Update(ctx context.Context, req *repo.UpdatePost) error {
 	return tsx.Commit()
 }
 
-func (u *postRepo) Delete(ctx context.Context, id string) error {
-	tsx, err := u.db.Begin()
+func (r *PostRepository) Delete(ctx context.Context, id string) error {
+	tsx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}

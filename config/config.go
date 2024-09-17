@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -21,14 +22,20 @@ type Postgres struct {
 	User     string
 	Password string
 	Database string
+	SSLMode  string
 }
 
-func Load(path string) Config {
-	godotenv.Load(path + "/.env")
+func Load(path string, log *zap.Logger) Config {
+	// Load environment variables from the .env file
+	err := godotenv.Load(path + "/.env")
+	if err != nil {
+		log.Fatal("Error loading .env file", zap.Error(err))
+	}
 
 	conf := viper.New()
 	conf.AutomaticEnv()
 
+	// Populate the Config struct
 	cfg := Config{
 		App: App{
 			Port:    conf.GetString("APP_PORT"),
@@ -40,6 +47,7 @@ func Load(path string) Config {
 			User:     conf.GetString("POSTGRES_USER"),
 			Password: conf.GetString("POSTGRES_PASSWORD"),
 			Database: conf.GetString("POSTGRES_DB"),
+			SSLMode:  conf.GetString("POSTGRES_SSLMODE"),
 		},
 	}
 

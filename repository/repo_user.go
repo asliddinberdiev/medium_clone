@@ -1,41 +1,51 @@
-package postgres
+package repository
 
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"strings"
 	"time"
 
-	"github.com/asliddinberdiev/medium_clone/storage/repo"
+	models "github.com/asliddinberdiev/medium_clone/models"
 	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
 )
 
-type userRepo struct {
-	db *sqlx.DB
+type UserRepository struct {
+	db  *sqlx.DB
+	log *zap.Logger
 }
 
-func NewUserStorage(db *sqlx.DB) repo.UserStorageI {
-	return &userRepo{
-		db: db,
-	}
+func NewUserRepository(db *sqlx.DB, log *zap.Logger) *UserRepository {
+	return &UserRepository{db: db, log: log}
 }
 
-func (u *userRepo) Create(ctx context.Context, req *repo.User) (*repo.User, error) {
+func (r *UserRepository) Create(ctx context.Context, user models.User) (*models.User, error) {
 	query := `
-		INSERT INTO users (
-			id, first_name, last_name,
-			email, password
-		) VALUES($1, $2, $3, $4, $5) RETURNING id
+		INSERT INTO users (id, first_name, last_name, email, password, role) 
+		VALUES($1, $2, $3, $4, $5, $6) 
+		RETURNING id, first_name, last_name, email, role, created_at, updated_at 
 	`
 
-	err := u.db.QueryRow(query, req.ID, req.FirstName, req.LastName, req.Email, req.Password).Scan(&req.ID)
+	err := r.db.QueryRow(query, user.ID, user.FirstName, user.LastName, user.Email, user.Password, user.Role).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key") {
+			r.log.Error("repository: user create", zap.String("error", "this email already used"))
+			return nil, errors.New("unique")
+		}
+		r.log.Error("repository: user create", zap.Error(err))
 		return nil, err
 	}
 
-	return req, nil
+	return &user, nil
 }
 
-func (u *userRepo) Get(ctx context.Context, id string) (*repo.User, error) {
+func (r *UserRepository) GetAll(ctx context.Context) ([]models.User, error) {
+	return []models.User{}, nil
+}
+
+func (u *UserRepository) Get(ctx context.Context, id string) (*models.User, error) {
 	query := `
 		SELECT 
 			id, first_name, last_name,
@@ -43,7 +53,7 @@ func (u *userRepo) Get(ctx context.Context, id string) (*repo.User, error) {
 		FROM users WHERE id = $1
 	`
 
-	var user repo.User
+	var user models.User
 	err := u.db.QueryRow(query, id).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return nil, err
@@ -52,7 +62,7 @@ func (u *userRepo) Get(ctx context.Context, id string) (*repo.User, error) {
 	return &user, nil
 }
 
-func (u *userRepo) Update(ctx context.Context, req *repo.UpdateUser) error {
+func (u *UserRepository) Update(ctx context.Context, req *models.User) error {
 	tsx, err := u.db.Begin()
 	if err != nil {
 		return err
@@ -93,7 +103,7 @@ func (u *userRepo) Update(ctx context.Context, req *repo.UpdateUser) error {
 	return tsx.Commit()
 }
 
-func (u *userRepo) Delete(ctx context.Context, id string) error {
+func (u *UserRepository) Delete(ctx context.Context, id string) error {
 	tsx, err := u.db.Begin()
 	if err != nil {
 		return err
@@ -117,7 +127,6 @@ func (u *userRepo) Delete(ctx context.Context, id string) error {
 		tsx.Commit()
 		return sql.ErrNoRows
 	}
-
 
 	return tsx.Commit()
 }

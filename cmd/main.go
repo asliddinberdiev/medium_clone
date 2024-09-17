@@ -1,43 +1,53 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+	L "log"
 
-	router "github.com/asliddinberdiev/medium_clone/api"
 	"github.com/asliddinberdiev/medium_clone/config"
-	"github.com/asliddinberdiev/medium_clone/storage"
-	"github.com/jmoiron/sqlx"
+	"github.com/asliddinberdiev/medium_clone/handler"
+	"github.com/asliddinberdiev/medium_clone/repository"
+	"github.com/asliddinberdiev/medium_clone/server"
+	"github.com/asliddinberdiev/medium_clone/service"
+	"go.uber.org/zap"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	cfg := config.Load(".")
+	log := service.InitLogger("logs", "app")
+	defer func() {
+		if err := log.Sync(); err != nil {
+			L.Fatalf("logger sync error: %v\n", err)
+		}
+	}()
 
-	psqlUrl := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		cfg.Postgres.Host, cfg.Postgres.Port, cfg.Postgres.User,
-		cfg.Postgres.Password, cfg.Postgres.Database)
+	cfg := config.Load(".", log)
 
-	psqlConn, err := sqlx.Connect("postgres", psqlUrl)
+	// initialize db
+	db, err := repository.NewPostgresDB(repository.PostgresConfig{
+		User:     cfg.Postgres.User,
+		Password: cfg.Postgres.Password,
+		Host:     cfg.Postgres.Host,
+		Port:     cfg.Postgres.Port,
+		Database: cfg.Postgres.Database,
+		SSLMode:  cfg.Postgres.SSLMode,
+	}, log)
 	if err != nil {
-		log.Fatalf("Failed to connect to postgres: %v", err)
+		log.Fatal("failed to initialize db", zap.Error(err))
 	}
 
-	strg := storage.NewStorage(psqlConn)
+	// initialize repository
+	repos := repository.NewRepository(db, log)
 
-	router := router.NewRouter(&router.Options{Strg: strg})
+	// initialize services
+	services := service.NewService(repos, log)
 
-	server := &http.Server{
-		Addr:    ":" + cfg.App.Port,
-		Handler: router,
+	// initialize handlers
+	handlers := handler.NewHandler(services, cfg.App.Version, log)
+
+	log.Info("app run", zap.String("port", cfg.App.Port))
+	srv := new(server.Server)
+	if err := srv.Run(cfg.App.Port, handlers.InitRoutes()); err != nil {
+		log.Fatal("error occurred while running http server", zap.Error(err))
 	}
-
-	log.Printf("Start to run to server: %v\n", cfg.App.Port)
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatalf("Failed to run to server: %v", err)
-	}
-
 }
