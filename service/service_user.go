@@ -44,6 +44,10 @@ func (s *UserService) Create(user models.UserCreate) (*models.User, error) {
 	return newUser, nil
 }
 
+func (s *UserService) GetAll() ([]*models.User, error) {
+	return s.repo.GetAll()
+}
+
 func (s *UserService) GetByID(id string) (*models.User, error) {
 	user, err := s.repo.GetByID(id)
 	if err != nil {

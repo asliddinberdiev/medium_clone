@@ -19,27 +19,43 @@ func NewHandler(services *service.Service, cfg config.App) *Handler {
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
-	router.Use(gin.LoggerWithWriter(service.LoggerWrite()))
+	router.Use(service.CustomLogger(service.LoggerWrite()))
 	router.RedirectTrailingSlash = true
 
 	v1 := router.Group("/api/" + h.cfg.Version)
 	{
-		users := v1.Group("/users")
+		open := v1.Group("")
 		{
-			users.POST("/", h.userCreate)
-			users.GET("/:id", middleware.JWTMiddleware(h.cfg), h.userGet)
-			users.PUT("/:id", middleware.JWTMiddleware(h.cfg), h.userUpdate)
-			users.DELETE("/:id", middleware.JWTMiddleware(h.cfg), h.userDelete)
+			users := open.Group("/users")
+			{
+				users.POST("/", h.userCreate)
+			}
+
+			posts := open.Group("/posts")
+			{
+				posts.POST("/", h.postCreate)
+				posts.GET("/", h.postGetAll)
+				posts.GET("/:id", h.postGet)
+			}
 		}
 
-		posts := v1.Group("/posts")
+		auth := v1.Group("", middleware.JWTMiddleware(h.cfg))
 		{
-			posts.POST("/", h.postCreate)
-			posts.GET("/", h.postGetAll)
-			posts.GET("/:id", h.postGet)
-			posts.PUT("/:id", h.postUpdate)
-			posts.DELETE("/:id", h.postDelete)
+			users := auth.Group("/users")
+			{
+				users.GET("/", middleware.Admin(h.services), h.userGetAll)
+				users.GET("/:id", h.userGetByID)
+				users.PUT("/:id", h.userUpdate)
+				users.DELETE("/:id", h.userDelete)
+			}
+
+			posts := auth.Group("/posts")
+			{
+				posts.PUT("/:id", h.postUpdate)
+				posts.DELETE("/:id", h.postDelete)
+			}
 		}
+
 	}
 
 	return router

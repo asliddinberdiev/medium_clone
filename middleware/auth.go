@@ -37,7 +37,25 @@ func JWTMiddleware(cfg config.App) gin.HandlerFunc {
 		}
 
 		ctx.Set("user_id", claims["id"])
-		ctx.Set("role", claims["role"])
+
+		ctx.Next()
+	}
+}
+
+func Admin(services *service.Service) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.GetString("user_id")
+
+		user, err := services.User.GetByID(id)
+		if err != nil {
+			utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
+			return
+		}
+
+		if user.Role != "admin" {
+			utils.Error(ctx, http.StatusForbidden, "access denied")
+			return
+		}
 
 		ctx.Next()
 	}

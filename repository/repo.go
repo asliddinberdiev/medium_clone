@@ -9,7 +9,7 @@ import (
 
 type User interface {
 	Create(user models.User) (*models.User, error)
-	GetAll() ([]models.User, error)
+	GetAll() ([]*models.User, error)
 	GetByID(id string) (*models.User, error)
 	Update(id string, req models.UpdateUser) (*models.User, error)
 	Delete(id string) error

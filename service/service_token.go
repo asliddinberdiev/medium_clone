@@ -20,10 +20,9 @@ func NewTokenService(cfg config.App) *TokenService {
 	return &TokenService{cfg: cfg}
 }
 
-func generate(userID, userRole, tokenType, sekretKey string, expireTime time.Duration) (string, error) {
+func generate(userID, tokenType, sekretKey string, expireTime time.Duration) (string, error) {
 	claims := jwt.MapClaims{
 		"id":   userID,
-		"role": userRole,
 		"type": tokenType,
 		"iat":  time.Now().Unix(),
 		"exp":  time.Now().Add(expireTime).Unix(),
@@ -41,22 +40,22 @@ func generate(userID, userRole, tokenType, sekretKey string, expireTime time.Dur
 	return signedToken, nil
 }
 
-func (s *TokenService) AccessTokenGenerate(userID, userRole string) (string, error) {
+func (s *TokenService) AccessTokenGenerate(userID string) (string, error) {
 	accessTime, err := strconv.Atoi(s.cfg.AccessTime)
 	if err != nil {
 		log.Println("service_token: accessGenerate - time error: ", err)
 		return "", err
 	}
-	return generate(userID, userRole, "access", s.cfg.TokenKey, time.Minute*time.Duration(accessTime))
+	return generate(userID, "access", s.cfg.TokenKey, time.Minute*time.Duration(accessTime))
 }
 
-func (s *TokenService) RefreshTokenGenerate(userID, userRole string) (string, error) {
+func (s *TokenService) RefreshTokenGenerate(userID string) (string, error) {
 	refreshTime, err := strconv.Atoi(s.cfg.RefreshTime)
 	if err != nil {
 		log.Println("service_token: refreshGenerate - time error: ", err)
 		return "", err
 	}
-	return generate(userID, userRole, "refresh", s.cfg.TokenKey, time.Hour*time.Duration(refreshTime))
+	return generate(userID, "refresh", s.cfg.TokenKey, time.Hour*time.Duration(refreshTime))
 }
 
 func (s *TokenService) Parse(tokenString string) (map[string]interface{}, error) {
@@ -79,7 +78,6 @@ func (s *TokenService) Parse(tokenString string) (map[string]interface{}, error)
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		result := map[string]interface{}{
 			"id":   claims["id"],
-			"role": claims["role"],
 			"type": claims["type"],
 			"jti":  claims["jti"],
 		}

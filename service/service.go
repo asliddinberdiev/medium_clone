@@ -8,6 +8,7 @@ import (
 
 type User interface {
 	Create(user models.UserCreate) (*models.User, error)
+	GetAll() ([]*models.User, error)
 	GetByID(id string)(*models.User, error)
 	Update(id string, user models.UpdateUser) (*models.User, error)
 	Delete(id string) error
@@ -17,8 +18,8 @@ type Post interface {
 }
 
 type Token interface {
-	AccessTokenGenerate(userID, userRole string) (string, error)
-	RefreshTokenGenerate(userID, userRole string) (string, error)
+	AccessTokenGenerate(userGetByID string) (string, error)
+	RefreshTokenGenerate(userGetByID string) (string, error)
 	Parse(tokenString string) (map[string]interface{}, error)
 }
 

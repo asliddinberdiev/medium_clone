@@ -39,8 +39,24 @@ func (r *UserRepository) Create(user models.User) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) GetAll() ([]models.User, error) {
-	return []models.User{}, nil
+func (r *UserRepository) GetAll() ([]*models.User, error) {
+	var input []*models.User
+	query := `
+		SELECT 
+			id, first_name, last_name,
+			email, role, created_at, updated_at
+		FROM users 
+	`
+	err := r.db.Select(&input, query)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return []*models.User{}, nil
+		}
+		log.Println("repository_user: getAll - query error: ", err)
+		return nil, err
+	}
+
+	return input, nil
 }
 
 func (u *UserRepository) GetByID(id string) (*models.User, error) {
