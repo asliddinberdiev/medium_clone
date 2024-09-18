@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/asliddinberdiev/medium_clone/config"
@@ -33,7 +34,7 @@ func generate(userID, userRole, tokenType, sekretKey string, expireTime time.Dur
 
 	signedToken, err := token.SignedString([]byte(sekretKey))
 	if err != nil {
-		log.Println("service: token generate signedString error: ", err)
+		log.Println("service_token:  generate - signedString error: ", err)
 		return "", err
 	}
 
@@ -43,7 +44,7 @@ func generate(userID, userRole, tokenType, sekretKey string, expireTime time.Dur
 func (s *TokenService) AccessTokenGenerate(userID, userRole string) (string, error) {
 	accessTime, err := strconv.Atoi(s.cfg.AccessTime)
 	if err != nil {
-		log.Println("service: token access generate time error: ", err)
+		log.Println("service_token: accessGenerate - time error: ", err)
 		return "", err
 	}
 	return generate(userID, userRole, "access", s.cfg.TokenKey, time.Minute*time.Duration(accessTime))
@@ -52,7 +53,7 @@ func (s *TokenService) AccessTokenGenerate(userID, userRole string) (string, err
 func (s *TokenService) RefreshTokenGenerate(userID, userRole string) (string, error) {
 	refreshTime, err := strconv.Atoi(s.cfg.RefreshTime)
 	if err != nil {
-		log.Println("service: token refresh generate time error: ", err)
+		log.Println("service_token: refreshGenerate - time error: ", err)
 		return "", err
 	}
 	return generate(userID, userRole, "refresh", s.cfg.TokenKey, time.Hour*time.Duration(refreshTime))
@@ -61,14 +62,18 @@ func (s *TokenService) RefreshTokenGenerate(userID, userRole string) (string, er
 func (s *TokenService) Parse(tokenString string) (map[string]interface{}, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			log.Println("service: token parse method error")
-			return nil, errors.New("an error occurred while validating the token")
+			log.Println("service_token: parse - method error")
+			return nil, errors.New("invalid token")
 		}
 		return []byte(s.cfg.TokenKey), nil
 	})
 	if err != nil {
-		log.Println("service: token parse jwt error: ", err)
-		return nil, err
+		if strings.Contains(err.Error(), "expired") {
+			log.Println("service_token: parse - token is expired: ", err)
+			return nil, errors.New("token is expired")
+		}
+		log.Println("service_token: parse - error: ", err)
+		return nil, errors.New("invalid token")
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
@@ -81,6 +86,6 @@ func (s *TokenService) Parse(tokenString string) (map[string]interface{}, error)
 		return result, nil
 	}
 
-	log.Println("service: token invalid")
+	log.Println("service_token: invalid")
 	return nil, errors.New("invalid token")
 }

@@ -9,7 +9,7 @@ import (
 
 type Handler struct {
 	services *service.Service
-	cfg config.App
+	cfg      config.App
 }
 
 func NewHandler(services *service.Service, cfg config.App) *Handler {
@@ -28,8 +28,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			users.POST("/", h.userCreate)
 			users.GET("/:id", middleware.JWTMiddleware(h.cfg), h.userGet)
-			users.PUT("/:id", h.userUpdate)
-			users.DELETE("/:id", h.userDelete)
+			users.PUT("/:id", middleware.JWTMiddleware(h.cfg), h.userUpdate)
+			users.DELETE("/:id", middleware.JWTMiddleware(h.cfg), h.userDelete)
 		}
 
 		posts := v1.Group("/posts")

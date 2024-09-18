@@ -29,10 +29,10 @@ func (r *UserRepository) Create(user models.User) (*models.User, error) {
 	err := r.db.QueryRow(query, user.ID, user.FirstName, user.LastName, user.Email, user.Password, user.Role).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key") {
-			log.Println("repository: user create: this email already used")
+			log.Println("repository_user: create - this email already used")
 			return nil, errors.New("unique")
 		}
-		log.Println("repository: user create query error: ", err)
+		log.Println("repository_user: create - query error: ", err)
 		return nil, err
 	}
 
@@ -43,7 +43,7 @@ func (r *UserRepository) GetAll() ([]models.User, error) {
 	return []models.User{}, nil
 }
 
-func (u *UserRepository) Get(id string) (*models.User, error) {
+func (u *UserRepository) GetByID(id string) (*models.User, error) {
 	query := `
 		SELECT 
 			id, first_name, last_name,
@@ -55,21 +55,22 @@ func (u *UserRepository) Get(id string) (*models.User, error) {
 	err := u.db.QueryRow(query, id).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Println("repository: user not found")
+			log.Println("repository_user: getByID - not found")
 			return nil, err
 		}
-		log.Println("repository: user get query error: ", err)
+		log.Println("repository_user: getByID - query error: ", err)
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-func (u *UserRepository) Update(req *models.User) error {
+func (u *UserRepository) Update(id string, req models.UpdateUser) (*models.User, error) {
+	var input models.User
 	tsx, err := u.db.Begin()
 	if err != nil {
-		log.Println("repository: user update begin error: ", err)
-		return err
+		log.Println("repository_user: update - begin error: ", err)
+		return nil, err
 	}
 
 	query := `
@@ -77,51 +78,43 @@ func (u *UserRepository) Update(req *models.User) error {
 			first_name = $1,
 			last_name = $2,
 			password = $3,
-			updated_at = $4
-		WHERE id = $5
+			role = $4,
+			updated_at = $5
+		WHERE id = $6
+		RETURNING id, first_name, last_name, email, role, created_at, updated_at
 	`
 
-	res, err := tsx.Exec(query, req.FirstName, req.LastName, req.Password, time.Now(), req.ID)
+	err = tsx.QueryRow(query, req.FirstName, req.LastName, req.Password, req.Role, time.Now(), id).
+		Scan(&input.ID, &input.FirstName, &input.LastName, &input.Email, &input.Role, &input.CreatedAt, &input.UpdatedAt)
 	if err != nil {
 		errRoll := tsx.Rollback()
 		if errRoll != nil {
-			log.Println("repository: user update rollback error: ", err)
-			err = errRoll
+			log.Println("repository_user: update - rollback error: ", errRoll)
+			return nil, errRoll
 		}
-		log.Println("repository: user update exec error: ", err)
-		return err
+		log.Println("repository_user: update - exec error: ", err)
+		return nil, err
 	}
 
-	data, err := res.RowsAffected()
+	err = tsx.Commit()
 	if err != nil {
-		errRoll := tsx.Rollback()
-		if errRoll != nil {
-			log.Println("repository: user update rowsaffected rollback error: ", err)
-			err = errRoll
-		}
-		log.Println("repository: user update rowsaffected error: ", err)
-		return err
+		log.Println("repository_user: update - commit error: ", err)
+		return nil, err
 	}
 
-	if data == 0 {
-		tsx.Commit()
-		log.Println("repository: user update not found error: ", err)
-		return sql.ErrNoRows
-	}
-
-	return tsx.Commit()
+	return &input, nil
 }
 
 func (u *UserRepository) Delete(id string) error {
 	tsx, err := u.db.Begin()
 	if err != nil {
-		log.Println("repository: user delete begin error: ", err)
+		log.Println("repository_user: delete - begin error: ", err)
 		return err
 	}
 
 	res, err := tsx.Exec("DELETE FROM users WHERE id = $1", id)
 	if err != nil {
-		log.Println("repository: user delete exec error: ", err)
+		log.Println("repository_user: delete - exec error: ", err)
 		return err
 	}
 
@@ -129,16 +122,16 @@ func (u *UserRepository) Delete(id string) error {
 	if err != nil {
 		errRoll := tsx.Rollback()
 		if errRoll != nil {
-			log.Println("repository: user delete rowsaffected rollback error: ", err)
+			log.Println("repository_user: delete - rowsaffected rollback error: ", err)
 			err = errRoll
 		}
-		log.Println("repository: user delete rowsaffected error: ", err)
+		log.Println("repository_user: delete - rowsaffected error: ", err)
 		return err
 	}
 
 	if data == 0 {
 		tsx.Commit()
-		log.Println("repository: user delete not found error: ", err)
+		log.Println("repository_user: delete - not found error: ", err)
 		return sql.ErrNoRows
 	}
 

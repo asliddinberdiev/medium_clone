@@ -32,15 +32,12 @@ func JWTMiddleware(cfg config.App) gin.HandlerFunc {
 
 		claims, err := service.NewTokenService(cfg).Parse(token)
 		if err != nil {
-			utils.Error(ctx, http.StatusUnauthorized, "invalid token")
+			utils.Error(ctx, http.StatusUnauthorized, err.Error())
 			return
 		}
 
-		user_id := claims["id"]
-		role := claims["role"]
-
-		ctx.Set("user_id", user_id)
-		ctx.Set("role", role)
+		ctx.Set("user_id", claims["id"])
+		ctx.Set("role", claims["role"])
 
 		ctx.Next()
 	}

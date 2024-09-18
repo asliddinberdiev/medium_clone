@@ -9,6 +9,8 @@ import (
 type User interface {
 	Create(user models.UserCreate) (*models.User, error)
 	GetByID(id string)(*models.User, error)
+	Update(id string, user models.UpdateUser) (*models.User, error)
+	Delete(id string) error
 }
 
 type Post interface {

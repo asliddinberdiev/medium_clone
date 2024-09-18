@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"net/http"
+	"reflect"
 
 	models "github.com/asliddinberdiev/medium_clone/models"
 	"github.com/asliddinberdiev/medium_clone/utils"
@@ -12,7 +13,12 @@ import (
 func (h *Handler) userCreate(ctx *gin.Context) {
 	var input models.UserCreate
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		utils.Error(ctx, http.StatusBadRequest, "ShouldBindJSON")
+		utils.Error(ctx, http.StatusBadRequest, "required fields")
+		return
+	}
+
+	if err := input.IsValid(); err != nil {
+		utils.Error(ctx, http.StatusBadRequest, "fields validation error")
 		return
 	}
 
@@ -58,7 +64,7 @@ func (h *Handler) userGet(ctx *gin.Context) {
 	}
 
 	if user_id != id {
-		utils.Error(ctx, http.StatusNotFound, "not found user")
+		utils.Error(ctx, http.StatusNotFound, "invalid id param")
 		return
 	}
 
@@ -75,5 +81,71 @@ func (h *Handler) userGet(ctx *gin.Context) {
 	utils.Data(ctx, http.StatusOK, "get user successfully", user)
 }
 
-func (h *Handler) userUpdate(c *gin.Context) {}
-func (h *Handler) userDelete(c *gin.Context) {}
+func (h *Handler) userUpdate(ctx *gin.Context) {
+	var input models.UpdateUser
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		utils.Error(ctx, http.StatusBadRequest, "required fields")
+		return
+	}
+	if reflect.DeepEqual(input, models.UpdateUser{}) {
+		utils.Error(ctx, http.StatusBadRequest, "required fields")
+		return
+	}
+
+	if err := input.IsValid(); err != nil {
+		utils.Error(ctx, http.StatusBadRequest, "fields validation error")
+		return
+	}
+
+	user_id := ctx.GetString("user_id")
+	id, ok := ctx.Params.Get("id")
+	if !ok {
+		utils.Error(ctx, http.StatusBadRequest, "invalid id param")
+		return
+	}
+
+	if user_id != id {
+		utils.Error(ctx, http.StatusNotFound, "invalid id param")
+		return
+	}
+
+	updateUser, err := h.services.User.Update(user_id, input)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			utils.Error(ctx, http.StatusNotFound, "user not found")
+			return
+		}
+		utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
+		return
+	}
+
+	utils.Data(ctx, http.StatusOK, "get user successfully", updateUser)
+}
+
+func (h *Handler) userDelete(ctx *gin.Context) {
+	user_id := ctx.GetString("user_id")
+	id, ok := ctx.Params.Get("id")
+	if !ok {
+		utils.Error(ctx, http.StatusBadRequest, "invalid id param")
+		return
+	}
+
+	if user_id != id {
+		utils.Error(ctx, http.StatusNotFound, "invalid id param")
+		return
+	}
+
+	err := h.services.User.Delete(user_id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			utils.Error(ctx, http.StatusNotFound, "user not found")
+			return
+		}
+		utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
+		return
+	}
+
+	utils.Data(ctx, http.StatusOK, "delete user successfully", map[string]interface{}{
+		"id": user_id,
+	})
+}
