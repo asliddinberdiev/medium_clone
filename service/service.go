@@ -1,6 +1,8 @@
 package service
 
 import (
+	"time"
+
 	"github.com/asliddinberdiev/medium_clone/config"
 	models "github.com/asliddinberdiev/medium_clone/models"
 	"github.com/asliddinberdiev/medium_clone/repository"
@@ -9,22 +11,29 @@ import (
 type User interface {
 	Create(user models.UserCreate) (*models.User, error)
 	GetAll() ([]*models.User, error)
-	GetByID(id string)(*models.User, error)
+	GetByID(id string) (*models.User, error)
+	GetByEmail(email string) (*models.User, error)
 	Update(id string, user models.UpdateUser) (*models.User, error)
 	Delete(id string) error
+}
+
+type Auth interface {
+	AddBlack(tokenID, token string, exp time.Duration) error
+	HasBlackToken(tokenID string) bool
 }
 
 type Post interface {
 }
 
 type Token interface {
-	AccessTokenGenerate(userGetByID string) (string, error)
-	RefreshTokenGenerate(userGetByID string) (string, error)
+	AccessTokenGenerate(userID string) (string, error)
+	RefreshTokenGenerate(userID string) (string, error)
 	Parse(tokenString string) (map[string]interface{}, error)
 }
 
 type Service struct {
 	User
+	Auth
 	Post
 	Token
 }
@@ -32,6 +41,7 @@ type Service struct {
 func NewService(repo *repository.Repository, cfg config.App) *Service {
 	return &Service{
 		User:  NewUserService(repo.User),
+		Auth:  NewAuthService(repo.Auth),
 		Post:  NewPostService(repo.Post),
 		Token: NewTokenService(cfg),
 	}

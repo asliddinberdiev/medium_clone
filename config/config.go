@@ -10,6 +10,7 @@ import (
 type Config struct {
 	App      App
 	Postgres Postgres
+	Redis    Redis
 }
 
 type App struct {
@@ -27,6 +28,12 @@ type Postgres struct {
 	Password string
 	Database string
 	SSLMode  string
+}
+
+type Redis struct {
+	Host     string
+	Port     string
+	Password string
 }
 
 func Load(path string) Config {
@@ -53,6 +60,11 @@ func Load(path string) Config {
 			Password: conf.GetString("POSTGRES_PASSWORD"),
 			Database: conf.GetString("POSTGRES_DB"),
 			SSLMode:  conf.GetString("POSTGRES_SSLMODE"),
+		},
+		Redis: Redis{
+			Host:     conf.GetString("REDIS_HOST"),
+			Port:     conf.GetString("REDIS_PORT"),
+			Password: conf.GetString("REDIS_PASSWORD"),
 		},
 	}
 

@@ -24,14 +24,15 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	v1 := router.Group("/api/" + h.cfg.Version)
 	{
-		open := v1.Group("")
+		public := v1.Group("")
 		{
-			users := open.Group("/users")
+			auth := public.Group("/auth")
 			{
-				users.POST("/", h.userCreate)
+				auth.POST("/login", h.login)
+				auth.POST("/register", h.userCreate)
 			}
 
-			posts := open.Group("/posts")
+			posts := public.Group("/posts")
 			{
 				posts.POST("/", h.postCreate)
 				posts.GET("/", h.postGetAll)
@@ -39,9 +40,14 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			}
 		}
 
-		auth := v1.Group("", middleware.JWTMiddleware(h.cfg))
+		private := v1.Group("", middleware.JWTMiddleware(h.services))
 		{
-			users := auth.Group("/users")
+			auth := private.Group("/auth")
+			{
+				auth.POST("/logout", h.logout)
+			}
+
+			users := private.Group("/users")
 			{
 				users.GET("/", middleware.Admin(h.services), h.userGetAll)
 				users.GET("/:id", h.userGetByID)
@@ -49,7 +55,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 				users.DELETE("/:id", h.userDelete)
 			}
 
-			posts := auth.Group("/posts")
+			posts := private.Group("/posts")
 			{
 				posts.PUT("/:id", h.postUpdate)
 				posts.DELETE("/:id", h.postDelete)

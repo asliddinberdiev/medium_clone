@@ -81,6 +81,29 @@ func (u *UserRepository) GetByID(id string) (*models.User, error) {
 	return &user, nil
 }
 
+func (u *UserRepository) GetByEmail(email string) (*models.User, error) {
+	query := `
+		SELECT 
+			id, first_name, last_name,
+			email, password, role, created_at, updated_at
+		FROM users 
+		WHERE email = $1
+	`
+
+	var user models.User
+	err := u.db.QueryRow(query, email).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Println("repository_user: getByEmail - not found")
+			return nil, err
+		}
+		log.Println("repository_user: getByEmail - query error: ", err)
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (u *UserRepository) Update(id string, req models.UpdateUser) (*models.User, error) {
 	var input models.User
 	tsx, err := u.db.Begin()
@@ -93,14 +116,13 @@ func (u *UserRepository) Update(id string, req models.UpdateUser) (*models.User,
 		UPDATE users SET 
 			first_name = $1,
 			last_name = $2,
-			password = $3,
-			role = $4,
-			updated_at = $5
-		WHERE id = $6
+			role = $3,
+			updated_at = $4
+		WHERE id = $5
 		RETURNING id, first_name, last_name, email, role, created_at, updated_at
 	`
 
-	err = tsx.QueryRow(query, req.FirstName, req.LastName, req.Password, req.Role, time.Now(), id).
+	err = tsx.QueryRow(query, req.FirstName, req.LastName, req.Role, time.Now(), id).
 		Scan(&input.ID, &input.FirstName, &input.LastName, &input.Email, &input.Role, &input.CreatedAt, &input.UpdatedAt)
 	if err != nil {
 		errRoll := tsx.Rollback()

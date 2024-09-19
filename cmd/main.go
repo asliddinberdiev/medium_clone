@@ -36,7 +36,17 @@ func main() {
 		log.Fatalln("failed to initialize db error: ", err)
 	}
 
-	repos := repository.NewRepository(db)
+	// initialize rdb
+	rdb, err := repository.NewRedisDB(repository.RedisConfig{
+		Host:     cfg.Redis.Host,
+		Password: cfg.Redis.Password,
+		Port:     cfg.Redis.Port,
+	})
+	if err != nil {
+		log.Fatalln("failed to initialize rsdb error: ", err)
+	}
+
+	repos := repository.NewRepository(db, rdb)
 	services := service.NewService(repos, cfg.App)
 	handlers := handler.NewHandler(services, cfg.App)
 

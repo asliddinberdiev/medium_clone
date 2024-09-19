@@ -1,16 +1,16 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
-	"github.com/asliddinberdiev/medium_clone/config"
 	"github.com/asliddinberdiev/medium_clone/service"
 	"github.com/asliddinberdiev/medium_clone/utils"
 	"github.com/gin-gonic/gin"
 )
 
-func JWTMiddleware(cfg config.App) gin.HandlerFunc {
+func JWTMiddleware(services *service.Service) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
 		if authHeader == "" {
@@ -30,9 +30,27 @@ func JWTMiddleware(cfg config.App) gin.HandlerFunc {
 			return
 		}
 
-		claims, err := service.NewTokenService(cfg).Parse(token)
+		claims, err := services.Token.Parse(token)
 		if err != nil {
 			utils.Error(ctx, http.StatusUnauthorized, err.Error())
+			return
+		}
+
+		tokenID, ok := claims["jti"].(string)
+		if !ok {
+			log.Println("middleware: JTI is not a string")
+			utils.Error(ctx, http.StatusUnauthorized, "invalid token")
+			return
+		}
+		if ok := services.Auth.HasBlackToken(tokenID); !ok {
+			log.Println("middleware: JWT is black token")
+			utils.Error(ctx, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		if claims["type"] != "access" {
+			log.Println("middleware: JWT type not access")
+			utils.Error(ctx, http.StatusUnauthorized, "invalid token")
 			return
 		}
 

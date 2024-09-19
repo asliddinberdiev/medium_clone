@@ -58,16 +58,17 @@ func (s *UserService) GetByID(id string) (*models.User, error) {
 	return user, nil
 }
 
-func (s *UserService) Update(id string, user models.UpdateUser) (*models.User, error) {
-	if user.Password != "" {
-		hashPass, err := utils.GeneratePasswordHash(user.Password)
-		if err != nil {
-			log.Println("service_user: update - generate password error: ", err)
-			return nil, err
-		}
-		user.Password = hashPass
+func (s *UserService) GetByEmail(email string) (*models.User, error) {
+	user, err := s.repo.GetByEmail(email)
+	if err != nil {
+		log.Println("service_user: getByEmail - repo: ", err)
+		return nil, err
 	}
 
+	return user, nil
+}
+
+func (s *UserService) Update(id string, user models.UpdateUser) (*models.User, error) {
 	dbUser, err := s.repo.GetByID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -85,9 +86,6 @@ func (s *UserService) Update(id string, user models.UpdateUser) (*models.User, e
 	}
 	if user.Role == "" {
 		user.Role = dbUser.Role
-	}
-	if user.Password == "" {
-		user.Password = dbUser.Password
 	}
 
 	updateUser, err := s.repo.Update(id, user)
