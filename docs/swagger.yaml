@@ -1,0 +1,355 @@
+basePath: /
+definitions:
+  models.Login:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.Response:
+    properties:
+      data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  models.ResponseList:
+    properties:
+      data: {}
+      limit:
+        type: integer
+      message:
+        type: string
+      page:
+        type: integer
+      success:
+        type: boolean
+    type: object
+  models.ResponseStatus:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  models.Token:
+    properties:
+      token:
+        type: string
+    type: object
+  models.UpdateUser:
+    properties:
+      first_name:
+        minLength: 2
+        type: string
+      last_name:
+        minLength: 2
+        type: string
+      role:
+        enum:
+        - admin
+        - user
+        type: string
+    type: object
+  models.UserCreate:
+    properties:
+      email:
+        type: string
+      first_name:
+        minLength: 2
+        type: string
+      last_name:
+        minLength: 2
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role:
+        enum:
+        - admin
+        - user
+        type: string
+    required:
+    - email
+    - first_name
+    - password
+    type: object
+host: localhost:8000
+info:
+  contact:
+    email: asliddinberdiyevv@gmail.com
+    name: Asliddin
+    url: https://agsu.uz
+  description: API Server for MEDIUM_MINI Application
+  title: MEDIUM MINI_API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: login a user
+      parameters:
+      - description: Login Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      summary: Login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: logout a user
+      parameters:
+      - description: Logout Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.Token'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: Logout
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: register a user
+      parameters:
+      - description: Register Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      summary: Register
+      tags:
+      - auth
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: GetAll
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete user
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: get by id user
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: GetByID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: update user
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: UpdateUser Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: Update
+      tags:
+      - users
+schemes:
+- http
+- https
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
