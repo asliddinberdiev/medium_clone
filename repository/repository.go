@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"context"
 	"time"
 
 	models "github.com/asliddinberdiev/medium_clone/models"
@@ -23,25 +22,14 @@ type Auth interface {
 	GetBlackToken(tokenID string) (string, error)
 }
 
-type Post interface {
-	Create(ctx context.Context, req *models.Post) (*models.Post, error)
-	GetAll(ctx context.Context, limit int, offset int) ([]*models.Post, error)
-	GetAllPersonal(ctx context.Context, userID string, limit int, offset int) ([]*models.PersonalPost, error)
-	GetByID(ctx context.Context, id string) (*models.Post, error)
-	Update(ctx context.Context, req *models.UpdatePost) error
-	Delete(ctx context.Context, id string) error
-}
-
 type Repository struct {
 	User
 	Auth
-	Post
 }
 
 func NewRepository(db *sqlx.DB, rdb *redis.Client) *Repository {
 	return &Repository{
 		User: NewUserRepository(db),
 		Auth: NewAuthRepository(db, rdb),
-		Post: NewPostRepository(db),
 	}
 }

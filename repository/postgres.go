@@ -29,13 +29,13 @@ func NewPostgresDB(cfg PostgresConfig) (*sqlx.DB, error) {
 
 	db, err := sqlx.Open("postgres", dbUrl)
 	if err != nil {
-		log.Fatalln("repository_postgres: open error: ", err)
+		log.Println("repository_postgres: open error: ", err)
 		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatalln("repository_postgres: ping error: ", err)
+		log.Println("repository_postgres: ping error: ", err)
 		return nil, err
 	}
 

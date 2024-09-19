@@ -20,19 +20,34 @@ func NewUserRepository(db *sqlx.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(user models.User) (*models.User, error) {
+	tsx, err := r.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+
 	query := `
 		INSERT INTO users (id, first_name, last_name, email, password, role) 
 		VALUES($1, $2, $3, $4, $5, $6) 
 		RETURNING id, first_name, last_name, email, role, created_at, updated_at 
 	`
 
-	err := r.db.QueryRow(query, user.ID, user.FirstName, user.LastName, user.Email, user.Password, user.Role).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+	err = tsx.QueryRow(query, user.ID, user.FirstName, user.LastName, user.Email, user.Password, user.Role).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key") {
 			log.Println("repository_user: create - this email already used")
 			return nil, errors.New("unique")
 		}
+		errRoll := tsx.Rollback()
+		if errRoll != nil {
+			log.Println("repository_user: create - rollback error: ", errRoll)
+			err = errRoll
+		}
 		log.Println("repository_user: create - query error: ", err)
+		return nil, err
+	}
+
+	if err := tsx.Commit(); err != nil {
+		log.Println("repository_user: create - commit error: ", err)
 		return nil, err
 	}
 
@@ -128,7 +143,7 @@ func (u *UserRepository) Update(id string, req models.UpdateUser) (*models.User,
 		errRoll := tsx.Rollback()
 		if errRoll != nil {
 			log.Println("repository_user: update - rollback error: ", errRoll)
-			return nil, errRoll
+			err = errRoll
 		}
 		log.Println("repository_user: update - exec error: ", err)
 		return nil, err

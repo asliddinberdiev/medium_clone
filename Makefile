@@ -22,3 +22,17 @@ migratedown:
 
 swag:
 	@swag init -g cmd/main.go
+
+test:
+	@go test -v ./...
+
+cover:
+	@go test -cover ./...
+
+cover-html:
+	@go test -coverprofile=coverage.out ./...
+	@go tool cover -html=coverage.out -o coverage.html
+
+cover-clean:
+	@rm -rf coverage.out
+	@rm -rf coverage.html

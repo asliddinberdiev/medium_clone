@@ -22,9 +22,6 @@ type Auth interface {
 	HasBlackToken(tokenID string) bool
 }
 
-type Post interface {
-}
-
 type Token interface {
 	AccessTokenGenerate(userID string) (string, error)
 	RefreshTokenGenerate(userID string) (string, error)
@@ -34,7 +31,6 @@ type Token interface {
 type Service struct {
 	User
 	Auth
-	Post
 	Token
 }
 
@@ -42,7 +38,6 @@ func NewService(repo *repository.Repository, cfg config.App) *Service {
 	return &Service{
 		User:  NewUserService(repo.User),
 		Auth:  NewAuthService(repo.Auth),
-		Post:  NewPostService(repo.Post),
 		Token: NewTokenService(cfg),
 	}
 }
