@@ -14,6 +14,22 @@ import (
 	_ "github.com/lib/pq"
 )
 
+
+// @title MEDIUM MINI_API
+// @version 1.0
+// @description API Server for MEDIUM_MINI Application
+
+// @contact.name Asliddin
+// @contact.url https://agsu.uz
+// @contact.email asliddinberdiyevv@gmail.com
+
+// @host localhost:8000
+// @BasePath /
+// @schemes http https
+
+// @securityDefinitions.apiKey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	_ = os.Mkdir("logs", 0770)
 	logFile, err := os.OpenFile(path.Join("logs", "app.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)

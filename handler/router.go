@@ -2,9 +2,12 @@ package handler
 
 import (
 	"github.com/asliddinberdiev/medium_clone/config"
+	"github.com/asliddinberdiev/medium_clone/docs"
 	"github.com/asliddinberdiev/medium_clone/middleware"
 	"github.com/asliddinberdiev/medium_clone/service"
 	"github.com/gin-gonic/gin"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Handler struct {
@@ -61,8 +64,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 				posts.DELETE("/:id", h.postDelete)
 			}
 		}
-
 	}
+
+	docs.SwaggerInfo.BasePath = v1.BasePath()
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	return router
 }

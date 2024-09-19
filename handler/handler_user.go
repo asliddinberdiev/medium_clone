@@ -10,6 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary      Register
+// @Description  register a user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        req  body      models.UserCreate true "Register Request"
+// @Success      200  {object}  models.Response
+// @Failure      400  {object}  models.ResponseStatus
+// @Failure      500  {object}  models.ResponseStatus
+// @Router       /auth/register [post]
 func (h *Handler) userCreate(ctx *gin.Context) {
 	var input models.UserCreate
 	if err := ctx.ShouldBindJSON(&input); err != nil {
@@ -55,6 +65,18 @@ func (h *Handler) userCreate(ctx *gin.Context) {
 	})
 }
 
+// @Summary      GetAll
+// @Description  get all users
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}   models.ResponseList
+// @Failure      400   {object}  models.ResponseStatus
+// @Failure      401   {object}  models.ResponseStatus
+// @Failure      403   {object}  models.ResponseStatus
+// @Failure      500   {object}  models.ResponseStatus
+// @Router       /users [get]
+// @Security ApiKeyAuth
 func (h *Handler) userGetAll(ctx *gin.Context) {
 	list, err := h.services.User.GetAll()
 	if err != nil {
@@ -62,9 +84,22 @@ func (h *Handler) userGetAll(ctx *gin.Context) {
 		return
 	}
 
-	utils.Data(ctx, http.StatusOK, "get all user successfully", list)
+	utils.List(ctx, http.StatusOK, "get all user successfully", 10, 1, list)
 }
 
+// @Summary      GetByID
+// @Description  get by id user
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param 		 id path string true "id"
+// @Success      200  {object}   models.Response
+// @Failure      400   {object}  models.ResponseStatus
+// @Failure      401   {object}  models.ResponseStatus
+// @Failure      404   {object}  models.ResponseStatus
+// @Failure      500   {object}  models.ResponseStatus
+// @Router       /users/{id} [get]
+// @Security ApiKeyAuth
 func (h *Handler) userGetByID(ctx *gin.Context) {
 	id, ok := ctx.Params.Get("id")
 	if !ok {
@@ -85,6 +120,21 @@ func (h *Handler) userGetByID(ctx *gin.Context) {
 	utils.Data(ctx, http.StatusOK, "get user successfully", user)
 }
 
+// @Summary      Update
+// @Description  update user
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param 		 id path string true "id"
+// @Param 		 req  body  models.UpdateUser true "UpdateUser Request"
+// @Success      200  {object}   models.Response
+// @Failure      400   {object}  models.ResponseStatus
+// @Failure      401   {object}  models.ResponseStatus
+// @Failure      403   {object}  models.ResponseStatus
+// @Failure      404   {object}  models.ResponseStatus
+// @Failure      500   {object}  models.ResponseStatus
+// @Router       /users/{id} [put]
+// @Security ApiKeyAuth
 func (h *Handler) userUpdate(ctx *gin.Context) {
 	var input models.UpdateUser
 	if err := ctx.ShouldBindJSON(&input); err != nil {
@@ -132,9 +182,22 @@ func (h *Handler) userUpdate(ctx *gin.Context) {
 		return
 	}
 
-	utils.Data(ctx, http.StatusOK, "get user successfully", updateUser)
+	utils.Data(ctx, http.StatusOK, "update user successfully", updateUser)
 }
 
+// @Summary      Delete
+// @Description  delete user
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param 		 id path string true "id"
+// @Success      200  {object}   models.Response
+// @Failure      400   {object}  models.ResponseStatus
+// @Failure      401   {object}  models.ResponseStatus
+// @Failure      404   {object}  models.ResponseStatus
+// @Failure      500   {object}  models.ResponseStatus
+// @Router       /users/{id} [delete]
+// @Security ApiKeyAuth
 func (h *Handler) userDelete(ctx *gin.Context) {
 	id, ok := ctx.Params.Get("id")
 	if !ok {

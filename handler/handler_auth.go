@@ -11,6 +11,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary      Login
+// @Description  login a user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        req  body      models.Login true "Login Request"
+// @Success      200  {object}  models.Response
+// @Failure      400  {object}  models.ResponseStatus
+// @Failure      500  {object}  models.ResponseStatus
+// @Router       /auth/login [post]
 func (h *Handler) login(ctx *gin.Context) {
 	var input models.Login
 	err := ctx.ShouldBindJSON(&input)
@@ -62,6 +72,19 @@ func (h *Handler) login(ctx *gin.Context) {
 	})
 }
 
+// @Summary      Logout
+// @Description  logout a user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        req  body      models.Token true "Logout Request"
+// @Success      200  {object}  models.Response
+// @Failure      400  {object}  models.ResponseStatus
+// @Failure      400  {object}  models.ResponseStatus
+// @Failure      401  {object}  models.ResponseStatus
+// @Failure      500  {object}  models.ResponseStatus
+// @Router       /auth/logout [post]
+// @Security ApiKeyAuth
 func (h *Handler) logout(ctx *gin.Context) {
 	var input models.Token
 	err := ctx.ShouldBindJSON(&input)
