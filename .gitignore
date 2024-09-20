@@ -1,3 +1,6 @@
 .env*
 vendor
 logs
+
+coverage.html
+coverage.out
