@@ -19,6 +19,12 @@ func NewUserService(repo repository.User) *UserService {
 }
 
 func (s *UserService) Create(user models.UserCreate) (*models.User, error) {
+	_, err := s.repo.GetByEmail(user.Email)
+	if err != nil {
+		log.Println("service_user: create - checking db email: ", err)
+		return nil, err
+	}
+
 	id, err := uuid.NewRandom()
 	if err != nil {
 		log.Println("service_user: create - uuid error: ", err)
@@ -45,7 +51,14 @@ func (s *UserService) Create(user models.UserCreate) (*models.User, error) {
 }
 
 func (s *UserService) GetAll() ([]*models.User, error) {
-	return s.repo.GetAll()
+	list, err := s.repo.GetAll()
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return []*models.User{}, nil
+		}
+		return nil, err
+	}
+	return list, nil
 }
 
 func (s *UserService) GetByID(id string) (*models.User, error) {

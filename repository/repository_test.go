@@ -13,16 +13,21 @@ import (
 func TestNewRepository(t *testing.T) {
 	rdb, redisMock := redismock.NewClientMock()
 	defer rdb.Close()
-	sqlDB, mockDB, _ := sqlmock.New() 
+	sqlDB, mockDB, _ := sqlmock.New()
 	defer sqlDB.Close()
 
 	db := sqlx.NewDb(sqlDB, "postgres")
 
-	repo := repository.NewRepository(db, rdb)
+	t.Run("repository", func(t *testing.T) {
+		repo := repository.NewRepository(db, rdb)
 
-	assert.NotNil(t, repo.User, "User repository should not be nil")
-	assert.NotNil(t, repo.Auth, "Auth repository should not be nil")
+		assert.NotNil(t, repo.User)
+		assert.NotNil(t, repo.Auth)
 
-	redisMock.ExpectationsWereMet()
-	mockDB.ExpectationsWereMet()   
+		err := redisMock.ExpectationsWereMet()
+		assert.NoError(t, err)
+		err = mockDB.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
+
 }

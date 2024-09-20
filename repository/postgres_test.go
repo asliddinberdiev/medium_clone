@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
 
 var cfgP *viper.Viper
@@ -46,27 +47,22 @@ func TestNewPostgresDB(t *testing.T) {
 	cfg := confSetupTestDB()
 	invalidCfg := invalidConfSetupTestDB()
 
-	t.Run("ValidConnection", func(t *testing.T) {
+	t.Run("correct", func(t *testing.T) {
 		db, err := repository.NewPostgresDB(cfg)
-		if err != nil {
-			t.Fatalf("expected no error, but got %v", err)
+		if err == nil {
+			defer db.Close()
 		}
-		defer db.Close()
 
-		err = db.Ping()
-		if err != nil {
-			t.Fatalf("could not ping the database: %v", err)
-		}
+		assert.NoError(t, err)
+		assert.NotNil(t, db)
+
+		pingErr := db.Ping()
+		assert.NoError(t, pingErr)
 	})
 
-	t.Run("InvalidConnection", func(t *testing.T) {
+	t.Run("incorrect", func(t *testing.T) {
 		db, err := repository.NewPostgresDB(invalidCfg)
-		if err == nil {
-			t.Fatalf("expected an error due to invalid credentials, but got none")
-		}
-
-		if db != nil {
-			t.Fatalf("expected db to be nil on error, but got %v", db)
-		}
+		assert.Error(t, err)
+		assert.Nil(t, db)
 	})
 }

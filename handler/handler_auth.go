@@ -36,6 +36,10 @@ func (h *Handler) login(ctx *gin.Context) {
 
 	user, err := h.services.User.GetByEmail(input.Email)
 	if err != nil {
+		if utils.HasStringKey(err.Error(), "duplicate key") {
+			utils.Error(ctx, http.StatusBadRequest, "email already used")
+			return
+		}
 		if err == sql.ErrNoRows {
 			utils.Error(ctx, http.StatusBadRequest, "email or password wrong")
 			return

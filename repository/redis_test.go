@@ -9,6 +9,7 @@ import (
 	"github.com/asliddinberdiev/medium_clone/repository"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
 
 var cfgR *viper.Viper
@@ -42,27 +43,19 @@ func TestNewRedisDB(t *testing.T) {
 	validCfg := validRedisConfig()
 	invalidCfg := invalidRedisConfig()
 
-	t.Run("ValidConnection", func(t *testing.T) {
+	t.Run("correct", func(t *testing.T) {
 		rdb, err := repository.NewRedisDB(validCfg)
-		if err != nil {
-			t.Fatalf("expected no error, but got %v", err)
-		}
+		assert.NoError(t, err)
+		assert.NotNil(t, rdb)
 		defer rdb.Close()
 
 		_, err = rdb.Ping(context.Background()).Result()
-		if err != nil {
-			t.Fatalf("could not ping the Redis database: %v", err)
-		}
+		assert.NoError(t, err)
 	})
 
 	t.Run("InvalidConnection", func(t *testing.T) {
 		rdb, err := repository.NewRedisDB(invalidCfg)
-		if err == nil {
-			t.Fatalf("expected an error due to invalid credentials, but got none")
-		}
-
-		if rdb != nil {
-			t.Fatalf("expected rdb to be nil on error, but got %v", rdb)
-		}
+		assert.Error(t, err)
+		assert.Nil(t, rdb)
 	})
 }

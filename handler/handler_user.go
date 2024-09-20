@@ -34,7 +34,7 @@ func (h *Handler) userCreate(ctx *gin.Context) {
 
 	user, err := h.services.User.Create(input)
 	if err != nil {
-		if err.Error() == "unique" {
+		if utils.HasStringKey(err.Error(), "duplicate key") {
 			utils.Error(ctx, http.StatusBadRequest, "this email already used")
 			return
 		}
