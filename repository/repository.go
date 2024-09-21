@@ -22,14 +22,25 @@ type Auth interface {
 	GetBlackToken(tokenID string) (string, error)
 }
 
+type Post interface {
+	Create(post models.Post) (*models.Post, error)
+	GetByID(id string) (*models.Post, error)
+	GetPersonal(user_id string) ([]*models.Post, error)
+	GetAll() ([]*models.Post, error)
+	Update(id string, post models.UpdatePost) (*models.Post, error)
+	Delete(id string) error
+}
+
 type Repository struct {
 	User
 	Auth
+	Post
 }
 
 func NewRepository(db *sqlx.DB, rdb *redis.Client) *Repository {
 	return &Repository{
 		User: NewUserRepository(db),
 		Auth: NewAuthRepository(db, rdb),
+		Post: NewPostRepository(db),
 	}
 }

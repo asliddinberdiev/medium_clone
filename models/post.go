@@ -20,15 +20,25 @@ type PersonalPost struct {
 }
 
 type CreatePost struct {
-	UserID    string `json:"user_id" db:"user_id"`
-	Title     string `json:"title" db:"title"`
-	Body      string `json:"body" db:"body"`
+	Title     string `json:"title" db:"title" validate:"required,min=2"`
+	Body      string `json:"body" db:"body" validate:"required,min=10"`
 	Published bool   `json:"published" db:"published"`
 }
 
 type UpdatePost struct {
-	ID        string `json:"id" db:"id"`
-	Title     string `json:"title" db:"title"`
-	Body      string `json:"body" db:"body"`
-	Published bool   `json:"published" db:"published"`
+	Title     string `json:"title" db:"title" validate:"omitempty,min=2"`
+	Body      string `json:"body" db:"body" validate:"omitempty,min=10"`
+	Published *bool   `json:"published" db:"published" validate:"omitempty"`
+}
+
+func (pp *PersonalPost) IsValid() error {
+	return validate.Struct(pp)
+}
+
+func (cp *CreatePost) IsValid() error {
+	return validate.Struct(cp)
+}
+
+func (up *UpdatePost) IsValid() error {
+	return validate.Struct(up)
 }

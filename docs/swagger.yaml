@@ -1,5 +1,19 @@
 basePath: /
 definitions:
+  models.CreatePost:
+    properties:
+      body:
+        minLength: 10
+        type: string
+      published:
+        type: boolean
+      title:
+        minLength: 2
+        type: string
+    required:
+    - body
+    - title
+    type: object
   models.Login:
     properties:
       email:
@@ -186,6 +200,171 @@ paths:
       summary: Register
       tags:
       - auth
+  /posts:
+    get:
+      consumes:
+      - application/json
+      description: get all my posts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: GetMe
+      tags:
+      - posts
+    post:
+      consumes:
+      - application/json
+      description: create a post
+      parameters:
+      - description: Create Post Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePost'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: Create
+      tags:
+      - posts
+  /posts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete post
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete
+      tags:
+      - post
+    get:
+      consumes:
+      - application/json
+      description: get by id post
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      summary: GetByID
+      tags:
+      - posts
+    put:
+      consumes:
+      - application/json
+      description: update post
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: Update
+      tags:
+      - posts
   /users:
     get:
       consumes:

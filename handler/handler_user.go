@@ -70,7 +70,7 @@ func (h *Handler) userCreate(ctx *gin.Context) {
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}   models.ResponseList
+// @Success      200   {object}   models.ResponseList
 // @Failure      400   {object}  models.ResponseStatus
 // @Failure      401   {object}  models.ResponseStatus
 // @Failure      403   {object}  models.ResponseStatus
@@ -93,7 +93,7 @@ func (h *Handler) userGetAll(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param 		 id path string true "id"
-// @Success      200  {object}   models.Response
+// @Success      200   {object}   models.Response
 // @Failure      400   {object}  models.ResponseStatus
 // @Failure      401   {object}  models.ResponseStatus
 // @Failure      404   {object}  models.ResponseStatus
@@ -127,7 +127,7 @@ func (h *Handler) userGetByID(ctx *gin.Context) {
 // @Produce      json
 // @Param 		 id path string true "id"
 // @Param 		 req  body  models.UpdateUser true "UpdateUser Request"
-// @Success      200  {object}   models.Response
+// @Success      200   {object}   models.Response
 // @Failure      400   {object}  models.ResponseStatus
 // @Failure      401   {object}  models.ResponseStatus
 // @Failure      403   {object}  models.ResponseStatus
@@ -191,7 +191,7 @@ func (h *Handler) userUpdate(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param 		 id path string true "id"
-// @Success      200  {object}   models.Response
+// @Success      200   {object}   models.Response
 // @Failure      400   {object}  models.ResponseStatus
 // @Failure      401   {object}  models.ResponseStatus
 // @Failure      404   {object}  models.ResponseStatus

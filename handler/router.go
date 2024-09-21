@@ -37,7 +37,6 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 			posts := public.Group("/posts")
 			{
-				posts.POST("/", h.postCreate)
 				posts.GET("/", h.postGetAll)
 				posts.GET("/:id", h.postGet)
 			}
@@ -60,6 +59,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 			posts := private.Group("/posts")
 			{
+				posts.POST("/", h.postCreate)
+				posts.GET("/me", h.postGetMe)
 				posts.PUT("/:id", h.postUpdate)
 				posts.DELETE("/:id", h.postDelete)
 			}

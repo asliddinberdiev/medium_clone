@@ -21,8 +21,10 @@ func NewUserService(repo repository.User) *UserService {
 func (s *UserService) Create(user models.UserCreate) (*models.User, error) {
 	_, err := s.repo.GetByEmail(user.Email)
 	if err != nil {
-		log.Println("service_user: create - checking db email: ", err)
-		return nil, err
+		if err != sql.ErrNoRows {
+			log.Println("service_user: create - checking db email: ", err)
+			return nil, err
+		}
 	}
 
 	id, err := uuid.NewRandom()
@@ -88,6 +90,7 @@ func (s *UserService) Update(id string, user models.UpdateUser) (*models.User, e
 			log.Println("service_user: update - not found dbUser")
 			return nil, err
 		}
+		log.Println("service_user: update - get user repo error: ", err)
 		return nil, err
 	}
 
@@ -111,10 +114,5 @@ func (s *UserService) Update(id string, user models.UpdateUser) (*models.User, e
 }
 
 func (s *UserService) Delete(id string) error {
-	err := s.repo.Delete(id)
-	if err != nil {
-		log.Println("service_user: delete - repo error: ", err)
-		return err
-	}
-	return nil
+	return s.repo.Delete(id)
 }

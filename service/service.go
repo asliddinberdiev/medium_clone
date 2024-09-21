@@ -28,10 +28,20 @@ type Token interface {
 	Parse(tokenString string) (map[string]interface{}, error)
 }
 
+type Post interface {
+	Create(user_id string, post models.CreatePost) (*models.Post, error)
+	GetByID(id string) (*models.Post, error)
+	GetPersonal(user_id string) ([]*models.Post, error)
+	GetAll() ([]*models.Post, error)
+	Update(id string, post models.UpdatePost) (*models.Post, error)
+	Delete(id string) error
+}
+
 type Service struct {
 	User
 	Auth
 	Token
+	Post
 }
 
 func NewService(repo *repository.Repository, cfg config.App) *Service {
@@ -39,5 +49,6 @@ func NewService(repo *repository.Repository, cfg config.App) *Service {
 		User:  NewUserService(repo.User),
 		Auth:  NewAuthService(repo.Auth),
 		Token: NewTokenService(cfg),
+		Post:  NewPostService(repo.Post),
 	}
 }
