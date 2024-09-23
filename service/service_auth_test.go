@@ -2,6 +2,8 @@ package service_test
 
 import (
 	"errors"
+	"io"
+	"log"
 	"testing"
 	"time"
 
@@ -25,6 +27,8 @@ func (m *MockAuthRepo) GetBlackToken(tokenID string) (string, error) {
 }
 
 func TestAddBlack(t *testing.T) {
+	log.SetOutput(io.Discard)
+
 	mockRepo := new(MockAuthRepo)
 	authService := service.NewAuthService(mockRepo)
 
@@ -52,6 +56,8 @@ func TestAddBlack(t *testing.T) {
 }
 
 func TestHasBlackToken(t *testing.T) {
+	log.SetOutput(io.Discard)
+
 	mockRepo := new(MockAuthRepo)
 	authService := service.NewAuthService(mockRepo)
 
@@ -77,4 +83,3 @@ func TestHasBlackToken(t *testing.T) {
 
 	mockRepo.AssertExpectations(t)
 }
-

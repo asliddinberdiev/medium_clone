@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"io"
 	"log"
 	"testing"
 
@@ -44,6 +45,8 @@ func invalidConfSetupTestDB() repository.PostgresConfig {
 }
 
 func TestNewPostgresDB(t *testing.T) {
+	log.SetOutput(io.Discard)
+
 	cfg := confSetupTestDB()
 	invalidCfg := invalidConfSetupTestDB()
 

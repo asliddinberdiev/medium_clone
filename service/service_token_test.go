@@ -1,6 +1,8 @@
 package service_test
 
 import (
+	"io"
+	"log"
 	"testing"
 
 	"github.com/asliddinberdiev/medium_clone/config"
@@ -9,6 +11,8 @@ import (
 )
 
 func TestAccessTokenGenerate(t *testing.T) {
+	log.SetOutput(io.Discard)
+
 	t.Run("correct", func(t *testing.T) {
 		mockCfg := config.App{Port: "8000", Version: "v1", TokenKey: "secret", AccessTime: "15", RefreshTime: "30"}
 		tokenService := service.NewTokenService(mockCfg)
@@ -33,6 +37,8 @@ func TestAccessTokenGenerate(t *testing.T) {
 }
 
 func TestRefreshTokenGenerate(t *testing.T) {
+	log.SetOutput(io.Discard)
+
 	t.Run("correct", func(t *testing.T) {
 		mockCfg := config.App{Port: "8000", Version: "v1", TokenKey: "secret", AccessTime: "15", RefreshTime: "30"}
 		tokenService := service.NewTokenService(mockCfg)
@@ -57,6 +63,8 @@ func TestRefreshTokenGenerate(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
+	log.SetOutput(io.Discard)
+
 	t.Run("access_parse", func(t *testing.T) {
 		mockCfg := config.App{Port: "8000", Version: "v1", TokenKey: "secret", AccessTime: "15", RefreshTime: "30"}
 		tokenService := service.NewTokenService(mockCfg)
