@@ -21,9 +21,10 @@ func NewHandler(services *service.Service, cfg config.App) *Handler {
 
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
+	router.RedirectTrailingSlash = true
 
 	router.Use(service.CustomLogger(service.LoggerWrite()))
-	router.RedirectTrailingSlash = true
+	router.Use(middleware.CORS())
 
 	v1 := router.Group("/api/" + h.cfg.Version)
 	{
