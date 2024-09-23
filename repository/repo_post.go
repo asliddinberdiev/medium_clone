@@ -33,7 +33,7 @@ func (r *PostRepository) Create(post models.Post) (*models.Post, error) {
 }
 
 func (r *PostRepository) GetByID(id string) (*models.Post, error) {
-	query := `SELECT * FROM posts WHERE id = $1`
+	query := `SELECT  id, user_id, title, body, published, created_at, updated_at FROM posts WHERE id = $1`
 
 	var post models.Post
 	err := r.db.Get(&post, query, id)
@@ -46,7 +46,7 @@ func (r *PostRepository) GetByID(id string) (*models.Post, error) {
 }
 
 func (r *PostRepository) GetPersonal(user_id string) ([]*models.Post, error) {
-	query := `SELECT * FROM posts WHERE user_id = $1`
+	query := `SELECT  id, user_id, title, body, published, created_at, updated_at FROM posts WHERE user_id = $1`
 
 	var list []*models.Post
 	err := r.db.Select(&list, query, user_id)
@@ -59,7 +59,7 @@ func (r *PostRepository) GetPersonal(user_id string) ([]*models.Post, error) {
 }
 
 func (r *PostRepository) GetAll() ([]*models.Post, error) {
-	query := `SELECT * FROM posts`
+	query := `SELECT  id, user_id, title, body, published, created_at, updated_at FROM posts`
 
 	var list []*models.Post
 	err := r.db.Select(&list, query)

@@ -93,7 +93,7 @@ func TestUserRepository_GetAll(t *testing.T) {
 	sqlxDB := sqlx.NewDb(db, "postgres")
 	userRepo := repository.NewUserRepository(sqlxDB)
 
-	t.Run("corrent", func(t *testing.T) {
+	t.Run("correct", func(t *testing.T) {
 		mock.ExpectQuery(`SELECT id, first_name, last_name, email, role, created_at, updated_at FROM users`).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "first_name", "last_name", "email", "role", "created_at", "updated_at"}).
 				AddRow("1", "John", "Doe", "john@example.com", "user", "2024-01-01", "2024-01-01").
@@ -104,7 +104,7 @@ func TestUserRepository_GetAll(t *testing.T) {
 		assert.Len(t, users, 2)
 	})
 
-	t.Run("incorrent", func(t *testing.T) {
+	t.Run("incorrect", func(t *testing.T) {
 		mock.ExpectQuery(`SELECT id, first_name, last_name, email, role, created_at, updated_at FROM users`).
 			WillReturnError(sql.ErrNoRows)
 
