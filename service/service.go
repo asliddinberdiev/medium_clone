@@ -37,18 +37,28 @@ type Post interface {
 	Delete(id string) error
 }
 
+type Comment interface {
+	Create(user_id string, comment models.CreateComment) (*models.Comment, error)
+	GetAll(post_id string) ([]*models.Comment, error)
+	GetByID(id string) (*models.Comment, error)
+	Update(id, body string) (*models.Comment, error)
+	Delete(comment_id string) error
+}
+
 type Service struct {
 	User
 	Auth
 	Token
 	Post
+	Comment
 }
 
 func NewService(repo *repository.Repository, cfg config.App) *Service {
 	return &Service{
-		User:  NewUserService(repo.User),
-		Auth:  NewAuthService(repo.Auth),
-		Token: NewTokenService(cfg),
-		Post:  NewPostService(repo.Post),
+		User:    NewUserService(repo.User),
+		Auth:    NewAuthService(repo.Auth),
+		Token:   NewTokenService(cfg),
+		Post:    NewPostService(repo.Post),
+		Comment: NewCommentService(repo.Comment),
 	}
 }

@@ -67,7 +67,7 @@ func (h *Handler) userCreate(ctx *gin.Context) {
 
 // @Summary      GetAll
 // @Description  get all users
-// @Tags         users
+// @Tags         user
 // @Accept       json
 // @Produce      json
 // @Success      200   {object}   models.ResponseList
@@ -89,7 +89,7 @@ func (h *Handler) userGetAll(ctx *gin.Context) {
 
 // @Summary      GetByID
 // @Description  get by id user
-// @Tags         users
+// @Tags         user
 // @Accept       json
 // @Produce      json
 // @Param 		 id path string true "id"
@@ -122,7 +122,7 @@ func (h *Handler) userGetByID(ctx *gin.Context) {
 
 // @Summary      Update
 // @Description  update user
-// @Tags         users
+// @Tags         user
 // @Accept       json
 // @Produce      json
 // @Param 		 id path string true "id"
@@ -187,7 +187,7 @@ func (h *Handler) userUpdate(ctx *gin.Context) {
 
 // @Summary      Delete
 // @Description  delete user
-// @Tags         users
+// @Tags         user
 // @Accept       json
 // @Produce      json
 // @Param 		 id path string true "id"

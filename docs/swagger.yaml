@@ -1,5 +1,16 @@
 basePath: /
 definitions:
+  models.CreateComment:
+    properties:
+      body:
+        minLength: 3
+        type: string
+      post_id:
+        type: string
+    required:
+    - body
+    - post_id
+    type: object
   models.CreatePost:
     properties:
       body:
@@ -55,6 +66,23 @@ definitions:
   models.Token:
     properties:
       token:
+        type: string
+    type: object
+  models.UpdateComment:
+    properties:
+      body:
+        minLength: 3
+        type: string
+    type: object
+  models.UpdatePost:
+    properties:
+      body:
+        minLength: 10
+        type: string
+      published:
+        type: boolean
+      title:
+        minLength: 2
         type: string
     type: object
   models.UpdateUser:
@@ -200,6 +228,156 @@ paths:
       summary: Register
       tags:
       - auth
+  /comments:
+    get:
+      consumes:
+      - application/json
+      description: get all comments
+      parameters:
+      - description: Post ID
+        in: query
+        name: post_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      summary: GetAll
+      tags:
+      - comment
+    post:
+      consumes:
+      - application/json
+      description: create a comment
+      parameters:
+      - description: Create Comment Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateComment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: Create
+      tags:
+      - comment
+  /comments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete comment
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete
+      tags:
+      - comment
+    put:
+      consumes:
+      - application/json
+      description: update comment
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Comment Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateComment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: Update
+      tags:
+      - comment
   /posts:
     get:
       consumes:
@@ -228,7 +406,7 @@ paths:
       - ApiKeyAuth: []
       summary: GetMe
       tags:
-      - posts
+      - post
     post:
       consumes:
       - application/json
@@ -251,6 +429,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
         "500":
           description: Internal Server Error
           schema:
@@ -259,7 +441,7 @@ paths:
       - ApiKeyAuth: []
       summary: Create
       tags:
-      - posts
+      - post
   /posts/{id}:
     delete:
       consumes:
@@ -330,7 +512,7 @@ paths:
             $ref: '#/definitions/models.ResponseStatus'
       summary: GetByID
       tags:
-      - posts
+      - post
     put:
       consumes:
       - application/json
@@ -341,6 +523,12 @@ paths:
         name: id
         required: true
         type: string
+      - description: Update Post Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePost'
       produces:
       - application/json
       responses:
@@ -350,6 +538,10 @@ paths:
             $ref: '#/definitions/models.Response'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/models.ResponseStatus'
         "403":
@@ -364,7 +556,7 @@ paths:
       - ApiKeyAuth: []
       summary: Update
       tags:
-      - posts
+      - post
   /users:
     get:
       consumes:
@@ -397,7 +589,7 @@ paths:
       - ApiKeyAuth: []
       summary: GetAll
       tags:
-      - users
+      - user
   /users/{id}:
     delete:
       consumes:
@@ -436,7 +628,7 @@ paths:
       - ApiKeyAuth: []
       summary: Delete
       tags:
-      - users
+      - user
     get:
       consumes:
       - application/json
@@ -474,7 +666,7 @@ paths:
       - ApiKeyAuth: []
       summary: GetByID
       tags:
-      - users
+      - user
     put:
       consumes:
       - application/json
@@ -522,7 +714,7 @@ paths:
       - ApiKeyAuth: []
       summary: Update
       tags:
-      - users
+      - user
 schemes:
 - http
 - https

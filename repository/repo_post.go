@@ -64,7 +64,7 @@ func (r *PostRepository) GetAll() ([]*models.Post, error) {
 	var list []*models.Post
 	err := r.db.Select(&list, query)
 	if err != nil {
-		log.Println("repository_post: GetPersonal - query error: ", err)
+		log.Println("repository_post: GetAll - query error: ", err)
 		return nil, err
 	}
 

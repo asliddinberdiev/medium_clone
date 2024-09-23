@@ -11,19 +11,19 @@ import (
 )
 
 // @Summary      Create
-// @Description  create a post
-// @Tags         post
+// @Description  create a comment
+// @Tags         comment
 // @Accept       json
 // @Produce      json
-// @Param        req  body      models.CreatePost true "Create Post Request"
+// @Param        req  body      models.CreateComment true "Create Comment Request"
 // @Success      200  {object}  models.Response
 // @Failure      400  {object}  models.ResponseStatus
 // @Failure      401  {object}  models.ResponseStatus
 // @Failure      500  {object}  models.ResponseStatus
-// @Router       /posts [post]
+// @Router       /comments [post]
 // @Security ApiKeyAuth
-func (h *Handler) postCreate(ctx *gin.Context) {
-	var input models.CreatePost
+func (h *Handler) commentCreate(ctx *gin.Context) {
+	var input models.CreateComment
 	if err := ctx.ShouldBindBodyWithJSON(&input); err != nil {
 		utils.Error(ctx, http.StatusBadRequest, "required fields")
 		return
@@ -36,100 +36,65 @@ func (h *Handler) postCreate(ctx *gin.Context) {
 
 	user_id := ctx.GetString("user_id")
 
-	post, err := h.services.Post.Create(user_id, input)
+	_, err := h.services.Post.GetByID(input.PostID)
+	if err != nil {
+		utils.Error(ctx, http.StatusBadRequest, "post not found")
+		return
+	}
+
+	comment, err := h.services.Comment.Create(user_id, input)
 	if err != nil {
 		utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
 		return
 	}
 
-	utils.Data(ctx, http.StatusOK, "created successfully", post)
+	utils.Data(ctx, http.StatusOK, "created successfully", comment)
 }
 
 // @Summary      GetAll
-// @Description  get all post
-// @Tags         post
+// @Description  get all comments
+// @Tags         comment
 // @Accept       json
 // @Produce      json
+// @Param        post_id query string false "Post ID"
 // @Success      200  {object}  models.ResponseList
 // @Failure      400  {object}  models.ResponseStatus
 // @Failure      500  {object}  models.ResponseStatus
-// @Router       /posts [get]
-func (h *Handler) postGetAll(ctx *gin.Context) {
-	list, err := h.services.Post.GetAll()
+// @Router       /comments [get]
+func (h *Handler) commentGetAll(ctx *gin.Context) {
+	post_id := ctx.Query("post_id")
+	if post_id == "" {
+		utils.Error(ctx, http.StatusBadRequest, "required query post_id")
+		return
+	}
+
+	list, err := h.services.Comment.GetAll(post_id)
 	if err != nil {
 		utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
 		return
 	}
 
-	utils.List(ctx, http.StatusOK, "get all successfully", uint(len(list)), 1, list)
-}
-
-// @Summary      GetMe
-// @Description  get all my posts
-// @Tags         post
-// @Accept       json
-// @Produce      json
-// @Success      200  {object}  models.ResponseList
-// @Failure      400  {object}  models.ResponseStatus
-// @Failure      401  {object}  models.ResponseStatus
-// @Failure      500  {object}  models.ResponseStatus
-// @Router       /posts [get]
-// @Security ApiKeyAuth
-func (h *Handler) postGetMe(ctx *gin.Context) {
-	user_id := ctx.GetString("user_id")
-	list, err := h.services.Post.GetPersonal(user_id)
-	if err != nil {
-		utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
-		return
-	}
-
-	utils.List(ctx, http.StatusOK, "get all successfully", uint(len(list)), 1, list)
-}
-
-// @Summary      GetByID
-// @Description  get by id post
-// @Tags         post
-// @Accept       json
-// @Produce      json
-// @Param 		 id path string true "id"
-// @Success      200  {object}  models.Response
-// @Failure      400  {object}  models.ResponseStatus
-// @Failure      500  {object}  models.ResponseStatus
-// @Router       /posts/{id} [get]
-func (h *Handler) postGet(ctx *gin.Context) {
-	post_id := ctx.Param("id")
-
-	post, err := h.services.Post.GetByID(post_id)
-	if err != err {
-		if err == sql.ErrNoRows {
-			utils.Status(ctx, http.StatusNotFound, "not found")
-			return
-		}
-		utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
-		return
-	}
-
-	utils.Data(ctx, http.StatusOK, "get successfully", post)
+	utils.List(ctx, http.StatusOK, "get successfully", uint(len(list)), 1, list)
 }
 
 // @Summary      Update
-// @Description  update post
-// @Tags         post
+// @Description  update comment
+// @Tags         comment
 // @Accept       json
 // @Produce      json
 // @Param 		 id path string true "id"
-// @Param        req  body      models.UpdatePost true "Update Post Request"
+// @Param        req  body      models.UpdateComment true "Update Comment Request"
 // @Success      200  {object}  models.Response
 // @Failure      400  {object}  models.ResponseStatus
 // @Failure      401  {object}  models.ResponseStatus
 // @Failure      403  {object}  models.ResponseStatus
 // @Failure      500  {object}  models.ResponseStatus
-// @Router       /posts/{id} [put]
+// @Router       /comments/{id} [put]
 // @Security ApiKeyAuth
-func (h *Handler) postUpdate(ctx *gin.Context) {
-	var input models.UpdatePost
-	post_id := ctx.Param("id")
-	if post_id == "" {
+func (h *Handler) commentUpdate(ctx *gin.Context) {
+	var input models.UpdateComment
+	comment_id := ctx.Param("id")
+	if comment_id == "" {
 		utils.Error(ctx, http.StatusBadRequest, "required id")
 		return
 	}
@@ -149,7 +114,7 @@ func (h *Handler) postUpdate(ctx *gin.Context) {
 		return
 	}
 
-	dbpost, err := h.services.Post.GetByID(post_id)
+	dbComment, err := h.services.Comment.GetByID(comment_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			utils.Status(ctx, http.StatusNotFound, "not found")
@@ -160,23 +125,23 @@ func (h *Handler) postUpdate(ctx *gin.Context) {
 	}
 
 	user_id := ctx.GetString("user_id")
-	if user_id != dbpost.UserID {
+	if user_id != dbComment.UserID {
 		utils.Error(ctx, http.StatusForbidden, "access denied")
 		return
 	}
 
-	post, err := h.services.Post.Update(post_id, input)
+	comment, err := h.services.Comment.Update(comment_id, input.Body)
 	if err != nil {
 		utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
 		return
 	}
 
-	utils.Data(ctx, http.StatusOK, "update successfully", post)
+	utils.Data(ctx, http.StatusOK, "update successfully", comment)
 }
 
 // @Summary      Delete
-// @Description  delete post
-// @Tags         post
+// @Description  delete comment
+// @Tags         comment
 // @Accept       json
 // @Produce      json
 // @Param 		 id path string true "id"
@@ -186,18 +151,18 @@ func (h *Handler) postUpdate(ctx *gin.Context) {
 // @Failure      403   {object}  models.ResponseStatus
 // @Failure      404   {object}  models.ResponseStatus
 // @Failure      500   {object}  models.ResponseStatus
-// @Router       /posts/{id} [delete]
+// @Router       /comments/{id} [delete]
 // @Security ApiKeyAuth
-func (h *Handler) postDelete(ctx *gin.Context) {
-	post_id := ctx.Param("id")
+func (h *Handler) commentDelete(ctx *gin.Context) {
+	comment_id := ctx.Param("id")
 	user_id := ctx.GetString("user_id")
 
-	if post_id == "" {
+	if comment_id == "" {
 		utils.Error(ctx, http.StatusBadRequest, "required id")
 		return
 	}
 
-	post, err := h.services.Post.GetByID(post_id)
+	comment, err := h.services.Comment.GetByID(comment_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			utils.Status(ctx, http.StatusNotFound, "not found")
@@ -207,17 +172,17 @@ func (h *Handler) postDelete(ctx *gin.Context) {
 		return
 	}
 
-	if user_id != post.UserID {
+	if user_id != comment.UserID {
 		utils.Error(ctx, http.StatusForbidden, "access denied")
 		return
 	}
 
-	if err := h.services.Post.Delete(post_id); err != nil {
+	if err := h.services.Comment.Delete(comment_id); err != nil {
 		utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
 		return
 	}
 
-	utils.Data(ctx, http.StatusOK, "delete post successfully", map[string]interface{}{
-		"id": post_id,
+	utils.Data(ctx, http.StatusOK, "delete comment successfully", map[string]interface{}{
+		"id": comment_id,
 	})
 }

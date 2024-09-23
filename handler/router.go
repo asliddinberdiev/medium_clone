@@ -40,6 +40,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 				posts.GET("/", h.postGetAll)
 				posts.GET("/:id", h.postGet)
 			}
+
+			comments := public.Group("/comments")
+			{
+				comments.GET("/", h.commentGetAll)
+			}
 		}
 
 		private := v1.Group("", middleware.JWTMiddleware(h.services))
@@ -63,6 +68,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 				posts.GET("/me", h.postGetMe)
 				posts.PUT("/:id", h.postUpdate)
 				posts.DELETE("/:id", h.postDelete)
+			}
+
+			comments := private.Group("/comments")
+			{
+				comments.POST("/", h.commentCreate)
+				comments.PUT("/:id", h.commentUpdate)
+				comments.DELETE("/:id", h.commentDelete)
 			}
 		}
 	}
