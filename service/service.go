@@ -45,20 +45,29 @@ type Comment interface {
 	Delete(comment_id string) error
 }
 
+type SavedPost interface {
+	Add(savedPost models.SavedPostAction) error
+	Remove(post_id string) error
+	GetByID(user_id, post_id string) (*models.SavedPost, error)
+	GetAll(user_id string) ([]*models.Post, error)
+}
+
 type Service struct {
 	User
 	Auth
 	Token
 	Post
 	Comment
+	SavedPost
 }
 
 func NewService(repo *repository.Repository, cfg config.App) *Service {
 	return &Service{
-		User:    NewUserService(repo.User),
-		Auth:    NewAuthService(repo.Auth),
-		Token:   NewTokenService(cfg),
-		Post:    NewPostService(repo.Post),
-		Comment: NewCommentService(repo.Comment),
+		User:      NewUserService(repo.User),
+		Auth:      NewAuthService(repo.Auth),
+		Token:     NewTokenService(cfg),
+		Post:      NewPostService(repo.Post),
+		Comment:   NewCommentService(repo.Comment),
+		SavedPost: NewSavedPostService(repo.SavedPost),
 	}
 }

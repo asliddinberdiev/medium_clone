@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"strings"
@@ -66,6 +67,10 @@ func Admin(services *service.Service) gin.HandlerFunc {
 
 		user, err := services.User.GetByID(id)
 		if err != nil {
+			if err == sql.ErrNoRows {
+				utils.Error(ctx, http.StatusUnauthorized, "not found user")
+				return
+			}
 			utils.Error(ctx, http.StatusInternalServerError, "we got internal server :(")
 			return
 		}

@@ -63,6 +63,16 @@ definitions:
       success:
         type: boolean
     type: object
+  models.SavedPostAction:
+    properties:
+      post_id:
+        type: string
+      user_id:
+        type: string
+    required:
+    - post_id
+    - user_id
+    type: object
   models.Token:
     properties:
       token:
@@ -382,7 +392,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: get all my posts
+      description: get all saved post
       produces:
       - application/json
       responses:
@@ -390,23 +400,13 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.ResponseList'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.ResponseStatus'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/models.ResponseStatus'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ResponseStatus'
-      security:
-      - ApiKeyAuth: []
-      summary: GetMe
+      summary: GetAll
       tags:
-      - post
+      - saved_post
     post:
       consumes:
       - application/json
@@ -557,6 +557,89 @@ paths:
       summary: Update
       tags:
       - post
+  /savedposts:
+    post:
+      consumes:
+      - application/json
+      description: save post
+      parameters:
+      - description: Save Post Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/models.SavedPostAction'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: SavedPost
+      tags:
+      - saved_post
+  /savedposts/:post_id:
+    delete:
+      consumes:
+      - application/json
+      description: save post remove
+      parameters:
+      - description: post_id
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: SavedPost
+      tags:
+      - saved_post
   /users:
     get:
       consumes:

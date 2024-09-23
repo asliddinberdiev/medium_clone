@@ -76,6 +76,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 				comments.PUT("/:id", h.commentUpdate)
 				comments.DELETE("/:id", h.commentDelete)
 			}
+
+			saved_posts := private.Group("/savedposts")
+			{
+				saved_posts.POST("/", h.savedPostAdd)
+				saved_posts.GET("/", h.savedPostAll)
+				saved_posts.DELETE("/:post_id", h.savedPostRemove)
+			}
 		}
 	}
 

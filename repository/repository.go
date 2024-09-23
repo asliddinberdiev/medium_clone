@@ -39,11 +39,19 @@ type Comment interface {
 	Delete(id string) error
 }
 
+type SavedPost interface {
+	Add(savedPost models.SavedPost) error
+	Remove(post_id string) error
+	GetByID(user_id, post_id string) (*models.SavedPost, error)
+	GetAll(user_id string) ([]*models.Post, error)
+}
+
 type Repository struct {
 	User
 	Auth
 	Post
 	Comment
+	SavedPost
 }
 
 func NewRepository(db *sqlx.DB, rdb *redis.Client) *Repository {
@@ -52,5 +60,6 @@ func NewRepository(db *sqlx.DB, rdb *redis.Client) *Repository {
 		Auth:    NewAuthRepository(db, rdb),
 		Post:    NewPostRepository(db),
 		Comment: NewCommentRepository(db),
+		SavedPost: NewSavedPostRepository(db),
 	}
 }

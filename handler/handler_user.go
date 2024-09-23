@@ -84,7 +84,7 @@ func (h *Handler) userGetAll(ctx *gin.Context) {
 		return
 	}
 
-	utils.List(ctx, http.StatusOK, "get all user successfully", 10, 1, list)
+	utils.List(ctx, http.StatusOK, "get all user successfully", uint(len(list)), 1, list)
 }
 
 // @Summary      GetByID
