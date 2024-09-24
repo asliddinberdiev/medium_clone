@@ -392,7 +392,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: get all saved post
+      description: get all my posts
       produces:
       - application/json
       responses:
@@ -400,13 +400,23 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.ResponseList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ResponseStatus'
-      summary: GetAll
+      security:
+      - ApiKeyAuth: []
+      summary: GetMe
       tags:
-      - saved_post
+      - post
     post:
       consumes:
       - application/json
@@ -558,6 +568,26 @@ paths:
       tags:
       - post
   /savedposts:
+    get:
+      consumes:
+      - application/json
+      description: get all saved post
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseList'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseStatus'
+      security:
+      - ApiKeyAuth: []
+      summary: GetAll
+      tags:
+      - saved_post
     post:
       consumes:
       - application/json

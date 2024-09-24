@@ -109,7 +109,8 @@ func (h *Handler) savedPostRemove(ctx *gin.Context) {
 // @Produce      json
 // @Success      200  {object}  models.ResponseList
 // @Failure      500  {object}  models.ResponseStatus
-// @Router       /posts [get]
+// @Router       /savedposts [get]
+// @Security ApiKeyAuth
 func (h *Handler) savedPostAll(ctx *gin.Context) {
 	user_id := ctx.GetString("user_id")
 

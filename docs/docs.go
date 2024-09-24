@@ -403,7 +403,12 @@ const docTemplate = `{
         },
         "/posts": {
             "get": {
-                "description": "get all saved post",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get all my posts",
                 "consumes": [
                     "application/json"
                 ],
@@ -411,14 +416,26 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "saved_post"
+                    "post"
                 ],
-                "summary": "GetAll",
+                "summary": "GetMe",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.ResponseList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ResponseStatus"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ResponseStatus"
                         }
                     },
                     "500": {
@@ -663,6 +680,38 @@ const docTemplate = `{
             }
         },
         "/savedposts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get all saved post",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "saved_post"
+                ],
+                "summary": "GetAll",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ResponseList"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ResponseStatus"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
