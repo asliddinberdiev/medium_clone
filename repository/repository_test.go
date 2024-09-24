@@ -25,6 +25,7 @@ func TestNewRepository(t *testing.T) {
 		assert.NotNil(t, repo.Auth)
 		assert.NotNil(t, repo.Post)
 		assert.NotNil(t, repo.Comment)
+		assert.NotNil(t, repo.SavedPost)
 
 		err := redisMock.ExpectationsWereMet()
 		assert.NoError(t, err)
