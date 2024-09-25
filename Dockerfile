@@ -4,7 +4,6 @@ RUN apk add --no-cache git make curl bash
 
 WORKDIR /app
 COPY go.mod go.sum ./
-COPY .env ./
 RUN go mod download
 
 COPY . .
@@ -15,7 +14,6 @@ RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/
 FROM alpine:latest
 WORKDIR /app
 
-COPY --from=builder /app/.env ./.env
 COPY --from=builder /app/docs/ ./docs/
 COPY --from=builder /app/migrations/ ./migrations/
 COPY --from=builder /app/medium .
