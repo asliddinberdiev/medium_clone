@@ -1,2 +1,33 @@
 # MEDIUM_CLONE
-For learn golang REST API
+
+# migrate
+
+[migrate](https://github.com/golang-migrate/migrate)
+
+# swag
+
+[swag](https://github.com/swaggo/swag)
+
+```make
+    make tidy
+```
+
+```make
+    make migration
+```
+
+```make
+    make migrateup
+```
+
+```make
+    make swag
+```
+
+```make
+    make test
+```
+
+```make
+    make run
+```
