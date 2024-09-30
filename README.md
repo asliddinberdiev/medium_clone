@@ -8,6 +8,7 @@
 
 [swag](https://github.com/swaggo/swag)
 
+# step by step
 ```make
     make tidy
 ```
